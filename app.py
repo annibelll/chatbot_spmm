@@ -1,22 +1,13 @@
 from flask import Flask, request, jsonify
 import os
-import pdfplumber
-from src.db import init_db, insert_file, get_all_files, get_files_by_type
+
+# модулі
+from src.utils import save_file, extract_image_text, extract_text
+from src.db import insert_file, init_db
+from src.search import find_answer
+from src.importer import import_all_files   
 
 app = Flask(__name__)
-init_db()
-
-MEDIA_DIR = "media"
-
-def extract_text(filepath):
-   
-    with pdfplumber.open(filepath) as pdf:
-        text = "\n".join(page.extract_text() or "" for page in pdf.pages)
-        print("=== PDF TEXT START ===")
-        print(text[:300])  
-        print("=== PDF TEXT END ===")
-        return text
-
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -24,10 +15,10 @@ def upload_file():
         return jsonify({"error": "No file part"}), 400
     
     file = request.files["file"]
-
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
 
+    
     ext = file.filename.split(".")[-1].lower()
     if ext in ["pdf"]:
         folder = "pdf"
@@ -40,38 +31,35 @@ def upload_file():
     else:
         folder = "other"
 
-    folder_path = os.path.join(MEDIA_DIR, folder)
-    os.makedirs(folder_path, exist_ok=True)
+    filepath = save_file(file, folder)
 
-    filepath = os.path.join(folder_path, file.filename)
-    file.save(filepath)
 
-    insert_file(file.filename, folder, filepath)
+    text = ""
+    if folder == "pdf":
+        text = extract_text(filepath)
+    elif folder == "images":
+        text = extract_image_text(filepath)
 
-    return jsonify({"message": f"{file.filename} saved", "path": filepath, "type": folder})
+    
+    insert_file(file.filename, folder, filepath, text)
+
+    return jsonify({
+        "message": f"{file.filename} saved",
+        "path": filepath,
+        "type": folder,
+        "text_preview": text[:200] if text else None
+    })
 
 
 @app.route("/api/chat", methods=["POST"])
 def chat_api():
-    """
-    Пошук відповіді по PDF-файлам з БД
-    """
     data = request.json
     question = data.get("question", "")
     answer = find_answer(question)
     return jsonify({"question": question, "answer": answer})
 
 
-def find_answer(question):
-   
-    pdf_files = get_files_by_type("pdf")  
-    for f in pdf_files:
-        text = extract_text(f["path"])  
-        for line in text.split("\n"):
-            if question.lower() in line.lower():
-                return f"Found in {f['filename']}: {line}"
-    return "Found nothing in any PDF."
-
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    init_db()           
+    import_all_files()   
+    app.run(debug=True)  

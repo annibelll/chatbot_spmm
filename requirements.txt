@@ -9,4 +9,7 @@ langchain-community
 openai
 python-dotenv
 sentence-transformers
-- e.
+pillow
+opencv-python
+pytesseract
+pdf2image
