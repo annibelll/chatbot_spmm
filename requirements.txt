@@ -1,0 +1,12 @@
+pypdf2
+pdfplumber
+flask
+numpy
+pandas
+langchain-pinecone
+langchain-openai
+langchain-community
+openai
+python-dotenv
+sentence-transformers
+- e.
