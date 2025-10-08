@@ -1,4 +1,4 @@
-from src.utils import extract_text,extract_image_text, extract_scanned_pdf_text
+from src.utils import extract_pdf_text,extract_image_data, extract_audio_text, extract_video_data
 from src.db import get_all_files
 import re
 

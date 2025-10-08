@@ -9,7 +9,7 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            filename TEXT,
+            filename TEXT UNIQUE,
             filetype TEXT,      -- pdf, image, video, audio
             path TEXT,
             last_modified REAL, -- час останньої зміни файлу
@@ -23,13 +23,43 @@ def init_db():
 def insert_file(filename, filetype, path, text=None):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    last_modified = os.path.getmtime(path)  # час зміни файлу
+    last_modified = os.path.getmtime(path)  
     cursor.execute("""
-        INSERT OR REPLACE INTO files (filename, filetype, path, last_modified, text)
+        INSERT INTO files (filename, filetype, path, last_modified, text)
         VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(filename) DO UPDATE SET
+            filetype = excluded.filetype,
+            path = excluded.path,
+            last_modified = excluded.last_modified,
+            text = excluded.text
     """, (filename, filetype, path, last_modified, text))
     conn.commit()
     conn.close()
+
+def file_exists(filename):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT 1 FROM files WHERE filename = ?", (filename,))
+    exists = cur.fetchone() is not None
+    conn.close()
+    return exists
+
+def get_last_modified(filename):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT last_modified FROM files WHERE filename = ?", (filename,))
+    row = cur.fetchone()
+    conn.close()
+    return row[0] if row else None
+
+
+def get_file_text(filename):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT text FROM files WHERE filename = ?", (filename,))
+    row = cur.fetchone()
+    conn.close()
+    return row[0] if row else None
 
 
 def get_all_files():
@@ -43,15 +73,4 @@ def get_all_files():
         for r in rows
     ]
 
-
-def get_files_by_type(filetype):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT filename, path, text FROM files WHERE filetype=?", (filetype,))
-    rows = cursor.fetchall()
-    conn.close()
-    return [
-        {"filename": r[0], "path": r[1], "text": r[2]}
-        for r in rows
-    ]
 

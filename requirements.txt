@@ -13,3 +13,10 @@ pillow
 opencv-python
 pytesseract
 pdf2image
+openai-whisper
+ffmpeg
+image
+cv2
+transformers
+torch
+ffmpeg-python
