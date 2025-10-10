@@ -10,10 +10,10 @@ def init_db():
         CREATE TABLE IF NOT EXISTS files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             filename TEXT UNIQUE,
-            filetype TEXT,      -- pdf, image, video, audio
+            filetype TEXT,      
             path TEXT,
-            last_modified REAL, -- час останньої зміни файлу
-            text TEXT           -- витягнутий текст
+            last_modified REAL, 
+            text TEXT           
         )
     """)
     conn.commit()
@@ -23,6 +23,7 @@ def init_db():
 def insert_file(filename, filetype, path, text=None):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+    filename = os.path.basename(filename).lower().strip()
     last_modified = os.path.getmtime(path)  
     cursor.execute("""
         INSERT INTO files (filename, filetype, path, last_modified, text)

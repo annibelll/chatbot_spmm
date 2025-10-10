@@ -88,16 +88,25 @@ def extract_audio_text(filepath):
 
 def extract_video_data(filepath):
     audio_path = "temp_audio.wav"
-    subprocess.run(["ffmpeg", "-i", filepath, "-q:a", "0", "-map", "a", audio_path, "-y"],
-                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    subprocess.run([
+        "ffmpeg", "-i", filepath,
+        "-q:a", "0", "-map", "a", audio_path, "-y"
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     audio_text = extract_audio_text(audio_path)
     os.remove(audio_path)
 
     out_dir = "frames_temp"
     os.makedirs(out_dir, exist_ok=True)
-    subprocess.run(["ffmpeg", "-i", filepath, "-vf", "fps=1/5",
-                    os.path.join(out_dir, "frame_%04d.jpg"), "-hide_banner", "-loglevel", "error"])
+
+    subprocess.run([
+        "ffmpeg", "-i", filepath,
+        "-vf", "select='not(mod(t,5))'",
+        "-vsync", "vfr",
+        os.path.join(out_dir, "frame_%04d.jpg"),
+        "-hide_banner", "-loglevel", "error"
+    ])
 
     frame_texts = []
     for frame_file in sorted(os.listdir(out_dir)):
@@ -106,4 +115,5 @@ def extract_video_data(filepath):
         os.remove(frame_path)
 
     os.rmdir(out_dir)
+
     return f"Audio transcript:\n{audio_text}\n\nFrames:\n" + "\n\n".join(frame_texts)
