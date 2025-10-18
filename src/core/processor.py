@@ -43,7 +43,7 @@ def _extract_image(file_path: Path) -> str:
 
 def _extract_audio(file_path: Path) -> str:
     """Transcribe audio/video file using Whisper model."""
-    model = whisper.load_model("base")  # "tiny", "small", etc can be chosen.
+    model = whisper.load_model("base")  # "tiny", "small", etc.
     result: dict = model.transcribe(str(file_path))
     text: str = result.get("text", "")
     return text.strip()
