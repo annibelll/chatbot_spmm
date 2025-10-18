@@ -1,0 +1,17 @@
+{
+  "executionEnvironments": [
+    {
+      "root": "./src",
+      "extraPaths": [
+        "./src/core",
+        "./src/api",
+        "./src/db",
+        "./src/utils"
+      ],
+      "pythonVersion": "3.10"
+    }
+  ],
+  "typeCheckingMode": "basic",
+  "reportMissingImports": true,
+  "useLibraryCodeForTypes": true
+}
