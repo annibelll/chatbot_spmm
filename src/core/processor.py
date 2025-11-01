@@ -6,7 +6,6 @@ import whisper
 
 
 def extract_text(file_path: Path) -> str:
-    """Extracts text from supported files (PDF, image, audio/video, txt)."""
     suffix = file_path.suffix.lower()
     if suffix == ".pdf":
         return _extract_pdf(file_path)
@@ -21,7 +20,6 @@ def extract_text(file_path: Path) -> str:
 
 
 def _extract_pdf(file_path: Path) -> str:
-    """Extract text from a PDF file."""
     text: str = ""
 
     with fitz.open(file_path) as pdf:
@@ -35,14 +33,12 @@ def _extract_pdf(file_path: Path) -> str:
 
 
 def _extract_image(file_path: Path) -> str:
-    """Extract text from an image using OCR"""
     img: Image.Image = Image.open(file_path)
     text: str = pytesseract.image_to_string(img, lang="eng+slk")
     return text.strip()
 
 
 def _extract_audio(file_path: Path) -> str:
-    """Transcribe audio/video file using Whisper model."""
     model = whisper.load_model("base")  # "tiny", "small", etc.
     result: dict = model.transcribe(str(file_path))
     text: str = result.get("text", "")

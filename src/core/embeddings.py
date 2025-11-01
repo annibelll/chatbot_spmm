@@ -15,10 +15,7 @@ class EmbeddingManager:
         self.model = SentenceTransformer(SENTENCE_TRANSFORMER_MODEL)
         self.collection = self.client.get_or_create_collection(collection_name)
 
-    def _hash_text(self, text: str) -> str:
-        return hashlib.sha1(text.encode("utf-8")).hexdigest()[:10]
-
-    def add_texts(self, chunks: List[Dict[str, Any]]):
+    def encode_and_store_chunks(self, chunks: List[Dict[str, Any]]):
         if not chunks:
             return
 
@@ -53,3 +50,6 @@ class EmbeddingManager:
             query_embeddings=[query_vec.tolist()], n_results=top_k
         )
         return results
+
+    def _hash_text(self, text: str) -> str:
+        return hashlib.sha1(text.encode("utf-8")).hexdigest()[:10]

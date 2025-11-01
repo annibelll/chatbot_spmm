@@ -2,7 +2,7 @@ import asyncio
 from pathlib import Path
 from core.retriever import Retriever
 from core.async_processor import FileProcessor
-from core.llm import format_answer_with_citations, generate_answer
+from core.llm import generate_answer
 from core.utils.file_discovery import discover_files
 from config.constants import UPLOAD_DIR, DEFAULT_RESPONSE_LANGUAGE
 
@@ -37,8 +37,7 @@ async def demo(
     print("User's query: ", query)
 
     answer = generate_answer(query, context_chunks, response_language)
-    answer_with_citations = format_answer_with_citations(answer)
-    print("\n[LLM Answer]:\n", answer_with_citations)
+    print("\n[LLM Answer]:\n", answer)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-import re
 import requests
 from typing import List, Dict, Any
 from config.constants import DEFAULT_RESPONSE_LANGUAGE, OLLAMA_API_URL, LLM_MODEL
@@ -32,7 +31,7 @@ Answer:
 
     try:
         response = requests.post(
-            OLLAMA_API_URL,
+            OLLAMA_API_URL + "/generate",
             json={"model": LLM_MODEL, "prompt": prompt, "stream": False},
             # timeout=30
         )
@@ -46,9 +45,3 @@ Answer:
         answer = "The context does not contain information to answer this question"
 
     return answer
-
-
-def format_answer_with_citations(answer: str) -> str:
-    pattern = r"\[([^\[\]]+\.(?:pdf|txt|jpg|png|mp3|mp4))\]"
-    cited_files = set(re.findall(pattern, answer))
-    return f"{answer}\n\nCited documents: {', '.join(cited_files) if cited_files else 'None'}"

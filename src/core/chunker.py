@@ -2,9 +2,6 @@ from typing import List
 
 
 def chunk_text(text: str, max_tokens: int = 300) -> List[str]:
-    """
-    Splits long text into smaller chunks (~max_tokens each) preserving paragraphs.
-    """
     paragraphs = text.split("\n")
     chunks, current = [], ""
     for para in paragraphs:
