@@ -1,18 +1,14 @@
+import re
 import requests
 from typing import List, Dict, Any
-import re
-
-OLLAMA_API_URL = "http://localhost:11434/api/generate"
-MODEL = "mistral"
+from config.constants import DEFAULT_RESPONSE_LANGUAGE, OLLAMA_API_URL, LLM_MODEL
 
 
 def generate_answer(
-    query: str, context_chunks: List[Dict[str, Any]], response_language: str = "English"
+    query: str,
+    context_chunks: List[Dict[str, Any]],
+    response_language: str = DEFAULT_RESPONSE_LANGUAGE,
 ) -> str:
-    """
-    Generates answer using context chunks. Each chunk includes file metadata.
-    The answer will be in the desired response_language.
-    """
     context_text = "\n\n".join(
         [
             f"[{chunk['file_id']}.{chunk['file_ext']}] {chunk['text']}"
@@ -37,7 +33,7 @@ Answer:
     try:
         response = requests.post(
             OLLAMA_API_URL,
-            json={"model": MODEL, "prompt": prompt, "stream": False},
+            json={"model": LLM_MODEL, "prompt": prompt, "stream": False},
             # timeout=30
         )
         response.raise_for_status()
@@ -53,10 +49,6 @@ Answer:
 
 
 def format_answer_with_citations(answer: str) -> str:
-    """
-    Extract cited documents from inline citations in the LLM answer.
-    """
     pattern = r"\[([^\[\]]+\.(?:pdf|txt|jpg|png|mp3|mp4))\]"
     cited_files = set(re.findall(pattern, answer))
-
     return f"{answer}\n\nCited documents: {', '.join(cited_files) if cited_files else 'None'}"

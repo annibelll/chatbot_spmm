@@ -1,9 +1,10 @@
 import sqlite3, hashlib, time
 from pathlib import Path
+from config.constants import SQL3_PATH
 
 
 class FileRegistry:
-    def __init__(self, db_path="./data/registry.db"):
+    def __init__(self, db_path: str = SQL3_PATH):
         self.conn = sqlite3.connect(db_path)
         self.conn.execute(
             """

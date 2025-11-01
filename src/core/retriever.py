@@ -3,12 +3,6 @@ import re
 
 
 def normalize_query(query: str) -> str:
-    """
-    Basic normalization for retrieval:
-    - Lowercasing
-    - Remove excessive whitespace
-    - Optional: remove punctuation for retrieval (could be configurable)
-    """
     query = query.lower().strip()
     query = re.sub(r"\s+", " ", query)
     return query

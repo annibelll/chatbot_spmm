@@ -1,26 +1,14 @@
 import asyncio
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-import logging
 import uuid
-from .processor import extract_text
-from .chunker import chunk_text
-from .embeddings import EmbeddingManager
-from .registry import FileRegistry
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from core.processor import extract_text
+from core.chunker import chunk_text
+from core.embeddings import EmbeddingManager
+from core.registry import FileRegistry
 
 
 class FileProcessor:
-    """
-    Processes multiple files asynchronously:
-    - Extracts text from various file types
-    - Chunks text
-    - Generates embeddings in batches
-    - Skips unchanged files using a registry
-    """
-
     def __init__(
         self,
         embedder: Optional[EmbeddingManager] = None,
@@ -33,15 +21,6 @@ class FileProcessor:
         self.batch_size = batch_size
 
     async def process_files(self, file_paths: List[Path]) -> Dict[str, Dict[str, Any]]:
-        """
-        Processes multiple files asynchronously with concurrency control.
-
-        Returns:
-            Dict[file_id, Dict[str, Any]]: Summary per file with:
-                - 'status': "processed", "skipped", or "error"
-                - 'chunks': number of chunks generated (0 if skipped or error)
-                - 'error': error message (None if successful)
-        """
         results: Dict[str, Dict[str, Any]] = {}
 
         async def process_with_semaphore(fp: Path):
@@ -49,10 +28,9 @@ class FileProcessor:
                 file_id = fp.stem
                 file_ext = fp.suffix.lower().replace(".", "") or "unknown"
 
-                # Skip unchanged files
                 if self.registry.has_changed(fp) is False:
-                    logger.info(f"[SKIP] {fp.name} (no changes detected)")
                     results[file_id] = {"status": "skipped", "chunks": 0, "error": None}
+                    print(f"Skipped {fp.name} — unchanged.")
                     return
 
                 try:
@@ -64,7 +42,7 @@ class FileProcessor:
                     }
                     self.registry.upsert(fp, chunk_count)
                 except Exception as e:
-                    logger.error(f"[ERROR] Failed to process {fp.name}: {e}")
+                    print(f"[ERROR] Failed to process {fp.name}: {e}")
                     results[file_id] = {"status": "error", "chunks": 0, "error": str(e)}
 
         await asyncio.gather(*(process_with_semaphore(fp) for fp in file_paths))
@@ -73,27 +51,17 @@ class FileProcessor:
     async def _process_single_file(
         self, file_path: Path, file_id: str, file_ext: str
     ) -> int:
-        """
-        Processes a single file: text extraction, chunking, embedding generation.
-
-        Returns:
-            int: Number of chunks generated
-        """
-        logger.info(f"Processing {file_path.name}...")
-
-        # 1️⃣ Extract text
+        print(f"Processing {file_path.name}...")
         text = await asyncio.to_thread(extract_text, file_path)
         if not text.strip():
-            logger.warning(f"Skipping {file_path.name} — no readable text.")
+            print(f"Skipping {file_path.name} — no readable text.")
             return 0
 
-        # 2️⃣ Chunk text
         chunks = await asyncio.to_thread(chunk_text, text)
         if not chunks:
-            logger.warning(f"No chunks generated for {file_path.name}.")
+            print(f"No chunks generated for {file_path.name}.")
             return 0
 
-        # 3️⃣ Prepare chunk metadata with unique IDs
         chunks_metadata: List[Dict[str, Any]] = [
             {
                 "text": chunk,
@@ -104,10 +72,9 @@ class FileProcessor:
             for chunk in chunks
         ]
 
-        # 4️⃣ Generate embeddings in batches
         for i in range(0, len(chunks_metadata), self.batch_size):
             batch = chunks_metadata[i : i + self.batch_size]
             await asyncio.to_thread(self.embedder.add_texts, batch)
 
-        logger.info(f"Completed {file_path.name} ({len(chunks)} chunks)")
+        print(f"Completed {file_path.name} ({len(chunks)} chunks)")
         return len(chunks)
