@@ -14,15 +14,6 @@ class Retriever:
         self.embedder = embedder
 
     def retrieve(self, query: str, top_k: int) -> List[Dict[str, Any]]:
-        """
-        Retrieves top-k chunks from the embedding store for a query.
-        Each dict contains:
-        - 'text': chunk text
-        - 'file_id': originating file name
-        - 'file_ext': file extension
-        - 'score': similarity score
-        - 'id': unique chunk ID
-        """
         query_norm = normalize_query(query)
         results = self.embedder.query(query_norm, top_k)
 

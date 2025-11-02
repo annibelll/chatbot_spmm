@@ -9,6 +9,7 @@ from core.quiz.store import QuizStore
 from core.quiz.engine import QuizEngine
 from core.quiz.evaluator import Evaluator
 from core.quiz.generator import QuizGenerator
+from core.user.manager import UserManager
 from config.constants import (
     UPLOAD_DIR,
     DEFAULT_RESPONSE_LANGUAGE,
@@ -19,6 +20,7 @@ from config.constants import (
 processor = FileProcessor()
 embedder = EmbeddingManager()
 retriever = Retriever(embedder)
+user_manager = UserManager()
 
 
 async def demo_explaination(
@@ -55,9 +57,12 @@ async def demo_explaination(
 async def demo_quiz(
     upload_dir: str = UPLOAD_DIR, response_language: str = DEFAULT_RESPONSE_LANGUAGE
 ):
+    user_name = input("Enter your name: ").strip() or "default_user"
+    user_id = user_manager.get_or_create_user(user_name)
+    print(f"Welcome, {user_name} (user_id={user_id})")
+
     upload_path = Path(upload_dir)
     files_to_process = discover_files(upload_path)
-
     if not files_to_process:
         print(f"No valid files found in {upload_path}")
         return
@@ -68,16 +73,18 @@ async def demo_quiz(
 
     await processor.process_files(files_to_process)
 
+    topic = ""
     store = QuizStore()
-    engine = QuizEngine(store, Evaluator(store))
+    engine = QuizEngine(store, Evaluator(store), user_manager)
     generator = QuizGenerator(retriever, store)
+
     quiz_id = await generator.generate(
-        topic="",
+        topic,
         num_questions=QUIZ_QUESTIONS_NUMBER,
         response_language=response_language,
     )
 
-    q = engine.start(quiz_id)
+    q = engine.start(user_id, quiz_id)
     while q:
         print(f"\nQ: {q['question']}")
         if q["options"]:
@@ -92,7 +99,10 @@ async def demo_quiz(
             print(result["summary"])
             break
 
+    profile = user_manager.get_user_profile(user_id)
+    print(profile)
+
 
 if __name__ == "__main__":
-    # asyncio.run(demo_explaination())
-    asyncio.run(demo_quiz())
+    asyncio.run(demo_explaination())
+    # asyncio.run(demo_quiz())

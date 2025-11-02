@@ -11,7 +11,7 @@ class Evaluator:
             cur = conn.cursor()
             cur.execute(
                 """
-                SELECT question, type, options, answer, explanation
+                SELECT question, type, options, answer
                 FROM questions WHERE id=? AND quiz_id=?
             """,
                 (question_id, quiz_id),
@@ -20,9 +20,7 @@ class Evaluator:
             if not q:
                 return False, "Question not found", 0
 
-        q_type, correct_answer, explanation = q[1], q[3], q[4]
-
-        print(f"Fetched question for the evaluation from DB is: {q}")
+        q_type, correct_answer = q[1], q[3]
 
         if q_type == "multiple_choice":
             is_correct = user_answer.strip().lower() == correct_answer.strip().lower()

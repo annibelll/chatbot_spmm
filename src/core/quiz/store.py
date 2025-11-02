@@ -1,3 +1,4 @@
+import uuid
 import json
 import sqlite3
 from config.constants import SQL3_PATH
@@ -9,7 +10,9 @@ class QuizStore:
         self._init_db()
 
     def _connect(self):
-        return sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON;")
+        return conn
 
     def _init_db(self):
         with self._connect() as conn:
@@ -20,6 +23,7 @@ class QuizStore:
                 quiz_id TEXT PRIMARY KEY,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
             CREATE TABLE IF NOT EXISTS questions (
                 id TEXT PRIMARY KEY,
                 quiz_id TEXT,
@@ -27,24 +31,24 @@ class QuizStore:
                 type TEXT,
                 options TEXT,
                 answer TEXT,
-                explanation TEXT,
                 topic TEXT
             );
+
             CREATE TABLE IF NOT EXISTS results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 quiz_id TEXT,
                 question_id TEXT,
+                user_id TEXT,
                 user_answer TEXT,
                 correct INTEGER,
-                score REAL
+                score REAL,
+                FOREIGN KEY(user_id) REFERENCES users(user_id)
             );
             """
             )
             conn.commit()
 
     def create_quiz(self, questions):
-        import uuid
-
         quiz_id = f"quiz_{uuid.uuid4().hex[:8]}"
         with self._connect() as conn:
             cur = conn.cursor()
@@ -52,9 +56,9 @@ class QuizStore:
             for q in questions:
                 cur.execute(
                     """
-                    INSERT INTO questions (id, quiz_id, question, type, options, answer, explanation, topic)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
+                    INSERT INTO questions (id, quiz_id, question, type, options, answer, topic)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
                     (
                         q["id"],
                         quiz_id,
@@ -62,7 +66,6 @@ class QuizStore:
                         q["type"],
                         json.dumps(q.get("options")),
                         q["answer"],
-                        q.get("explanation"),
                         q.get("topic"),
                     ),
                 )
@@ -89,15 +92,15 @@ class QuizStore:
                 "options": json.loads(row[3]) if row[3] else None,
             }
 
-    def save_result(self, quiz_id, question_id, user_answer, correct, score):
+    def save_result(self, quiz_id, question_id, user_id, user_answer, correct, score):
         with self._connect() as conn:
             cur = conn.cursor()
             cur.execute(
                 """
-                INSERT INTO results (quiz_id, question_id, user_answer, correct, score)
-                VALUES (?, ?, ?, ?, ?)
-            """,
-                (quiz_id, question_id, user_answer, int(correct), score),
+                INSERT INTO results (quiz_id, question_id, user_id, user_answer, correct, score)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (quiz_id, question_id, user_id, user_answer, int(correct), score),
             )
             conn.commit()
 

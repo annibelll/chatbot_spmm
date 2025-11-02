@@ -21,7 +21,7 @@ class QuizGenerator:
         llm_response = generate_quiz_questions(
             chunks, num_questions=num_questions, response_language=response_language
         )
-        # Expected format: list of dicts {id, type, question, options, answer, explanation}
+        # Expected format: list of dicts {type, question, topic, options, answer}
 
         print(f"Generated quiz questions by LLM are: {llm_response}")
 
@@ -30,12 +30,11 @@ class QuizGenerator:
             questions.append(
                 {
                     "id": str(uuid.uuid4())[:8],
-                    "question": q["question"],
                     "type": q["type"],
+                    "question": q["question"],
+                    "topic": q.get("topic"),
                     "options": q.get("options"),
-                    "answer": q["answer"],
-                    "explanation": q.get("explanation"),
-                    "topic": topic,
+                    "answer": q.get("answer"),
                 }
             )
 
