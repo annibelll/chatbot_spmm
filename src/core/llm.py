@@ -1,7 +1,12 @@
 import json
 import requests
 from typing import List, Dict, Any
-from config.constants import DEFAULT_RESPONSE_LANGUAGE, OLLAMA_API_URL, LLM_MODEL
+from config.constants import (
+    CORRECTNESS_TRESHOLD,
+    DEFAULT_RESPONSE_LANGUAGE,
+    OLLAMA_API_URL,
+    LLM_MODEL,
+)
 
 
 def generate_answer(
@@ -89,7 +94,7 @@ Respond STRICTLY in JSON:
 
         score = int(parsed.get("score", 0))
         feedback = parsed.get("feedback", "No feedback.")
-        correct = score >= 6  # threshold for marking as "correct"
+        correct = score >= CORRECTNESS_TRESHOLD
 
         return {"correct": correct, "score": score, "feedback": feedback}
 
@@ -109,25 +114,67 @@ def generate_quiz_questions(
     )
 
     prompt = f"""
-You are a teacher preparing a quiz strictly from the provided context.
-Do not use external knowledge.
-Create exactly {num_questions} questions (mix of multiple-choice and open-ended).
-Prefer concise phrasing and factual correctness.
-For each question, include the correct answer.
-The questions and answers must be in {response_language}.
+You are an expert teacher creating a quiz STRICTLY and EXCLUSIVELY from the provided CONTEXT below.
+You must NOT use any external knowledge, guesses, or creative rewrite. ONLY leverage the text verbatim.
 
-Output JSON list:
+YOUR TASK:
+- Generate EXACTLY {num_questions} quiz questions, mixing multiple-choice and open-ended.
+- ALL questions and answers MUST be based SOLELY on the context provided—NO exceptions.
+- Every question MUST be factual, concise, and answerable ONLY from the context.
+- Each question should have a short topic string summarizing what it's about.
+
+LANGUAGE:
+- Write ALL questions, answers, and topics ONLY in {response_language}.
+- Do not use any other language.
+
+OUTPUT FORMAT:
+- Your output MUST be a JSON array ONLY.
+- Do NOT include any explanation, comment, markdown, extra text, labels, or formatting—JUST the JSON.
+- Each array item must have this exact structure:
+
 [
   {{
-    "type": "multiple_choice" | "open_ended",
-    "question": "string",
-    "options": ["A", "B", "C", "D"] or null,
-    "answer": "string"
-  }}
+    "type": "multiple_choice" or "open_ended",
+    "question": "string",       // Clear and concise question based only on context
+    "topic": "string",          // Short topic summary (from context)
+    "options": ["option1", "option2", "option3", "option4"] OR null, // For MC: 4 plain answer texts, NO labels. For open-ended: null.
+    "answer": "string"          // For MC: MUST be EXACTLY one of options. For open-ended: factual answer from context.
+  }},
+  {{ ... }},
+  {{ ... }}
 ]
 
-Context:
+IMPORTANT RULES:
+- For multiple-choice, provide EXACTLY 4 answer texts, with NO "A/B/C/D" or numbering.
+- For multiple-choice, "answer" must be EXACTLY one of the 4 options.
+- For open-ended, "options" must be null.
+- NEVER include explanations, comments, formatting, markdown, metadata, or repeated text.
+- NEVER use any knowledge outside the provided context.
+- Do NOT invent, speculate, or generalize beyond the context.
+
+EXAMPLE OUTPUT STRUCTURE:
+[
+  {{
+    "type": "multiple_choice",
+    "question": "What is the main ingredient in soup X?",
+    "topic": "Ingredients",
+    "options": ["rice", "potato", "chicken", "beans"],
+    "answer": "chicken"
+  }},
+  {{
+    "type": "open_ended",
+    "question": "List the two steps for process Y.",
+    "topic": "Steps",
+    "options": null,
+    "answer": "Mix ingredients and cook for 10 minutes."
+  }},
+  ...
+]
+
+CONTEXT START
 {context_text}
+CONTEXT END
+PLEASE RETURN ONLY A JSON ARRAY OF QUESTIONS WITH NO EXTRA TEXT.
 """
 
     try:
