@@ -1,19 +1,20 @@
+import uuid
 import asyncio
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-import uuid
 from core.processor import extract_text
 from core.chunker import chunk_text
 from core.embeddings import EmbeddingManager
 from core.registry import FileRegistry
+from config.constants import MAX_CONCURENT_FILES, BATCH_SIZE
 
 
 class FileProcessor:
     def __init__(
         self,
         embedder: Optional[EmbeddingManager] = None,
-        max_concurrent: int = 5,
-        batch_size: int = 16,
+        max_concurrent: int = MAX_CONCURENT_FILES,
+        batch_size: int = BATCH_SIZE,
     ):
         self.embedder = embedder or EmbeddingManager()
         self.semaphore = asyncio.Semaphore(max_concurrent)

@@ -1,8 +1,8 @@
-from pathlib import Path
 import fitz
+import whisper
+from pathlib import Path
 import pytesseract
 from PIL import Image
-import whisper
 
 
 def extract_text(file_path: Path) -> str:

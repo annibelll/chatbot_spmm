@@ -44,7 +44,7 @@ class EmbeddingManager:
         )
         print(f"Collection now contains {self.collection.count()} total documents.")
 
-    def query(self, query_text: str, top_k: int = 3):
+    def query(self, query_text: str, top_k: int):
         query_vec = self.model.encode([query_text])[0]
         results = self.collection.query(
             query_embeddings=[query_vec.tolist()], n_results=top_k

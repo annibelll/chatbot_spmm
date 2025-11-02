@@ -5,30 +5,39 @@ from config.constants import SQL3_PATH
 
 class FileRegistry:
     def __init__(self, db_path: str = SQL3_PATH):
-        self.conn = sqlite3.connect(db_path)
-        self.conn.execute(
-            """
-        CREATE TABLE IF NOT EXISTS files (
-            file_id TEXT PRIMARY KEY,
-            path TEXT,
-            ext TEXT,
-            hash TEXT,
-            modified_at REAL,
-            chunk_count INTEGER,
-            processed_at REAL
-        )"""
-        )
-        self.conn.commit()
+        self.db_path = db_path
+        self._init_db()
+
+    def _connect(self):
+        return sqlite3.connect(self.db_path)
+
+    def _init_db(self):
+        with self._connect() as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS files (
+                    file_id TEXT PRIMARY KEY,
+                    path TEXT,
+                    ext TEXT,
+                    hash TEXT,
+                    modified_at REAL,
+                    chunk_count INTEGER,
+                    processed_at REAL
+                )
+                """
+            )
+            conn.commit()
 
     def compute_hash(self, file_path: Path) -> str:
         return hashlib.sha256(file_path.read_bytes()).hexdigest()
 
     def has_changed(self, file_path: Path) -> bool:
         file_id = file_path.stem
-        cur = self.conn.execute(
-            "SELECT hash, modified_at FROM files WHERE file_id=?", (file_id,)
-        )
-        row = cur.fetchone()
+        with self._connect() as conn:
+            cur = conn.execute(
+                "SELECT hash, modified_at FROM files WHERE file_id=?", (file_id,)
+            )
+            row = cur.fetchone()
         if not row:
             return True  # new file
 
@@ -43,16 +52,17 @@ class FileRegistry:
         mtime = file_path.stat().st_mtime
         ext = file_path.suffix.lstrip(".")
         now = time.time()
-        self.conn.execute(
-            """
-        INSERT INTO files (file_id, path, ext, hash, modified_at, chunk_count, processed_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(file_id) DO UPDATE SET
-            hash=excluded.hash,
-            modified_at=excluded.modified_at,
-            chunk_count=excluded.chunk_count,
-            processed_at=excluded.processed_at
-        """,
-            (file_id, str(file_path), ext, file_hash, mtime, chunk_count, now),
-        )
-        self.conn.commit()
+        with self._connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO files (file_id, path, ext, hash, modified_at, chunk_count, processed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(file_id) DO UPDATE SET
+                    hash=excluded.hash,
+                    modified_at=excluded.modified_at,
+                    chunk_count=excluded.chunk_count,
+                    processed_at=excluded.processed_at
+                """,
+                (file_id, str(file_path), ext, file_hash, mtime, chunk_count, now),
+            )
+            conn.commit()

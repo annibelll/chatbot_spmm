@@ -1,0 +1,114 @@
+import json
+import sqlite3
+from config.constants import SQL3_PATH
+
+
+class QuizStore:
+    def __init__(self, db_path: str = SQL3_PATH):
+        self.db_path = db_path
+        self._init_db()
+
+    def _connect(self):
+        return sqlite3.connect(self.db_path)
+
+    def _init_db(self):
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.executescript(
+                """
+            CREATE TABLE IF NOT EXISTS quizzes (
+                quiz_id TEXT PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS questions (
+                id TEXT PRIMARY KEY,
+                quiz_id TEXT,
+                question TEXT,
+                type TEXT,
+                options TEXT,
+                answer TEXT,
+                explanation TEXT,
+                topic TEXT
+            );
+            CREATE TABLE IF NOT EXISTS results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                quiz_id TEXT,
+                question_id TEXT,
+                user_answer TEXT,
+                correct INTEGER,
+                score REAL
+            );
+            """
+            )
+            conn.commit()
+
+    def create_quiz(self, questions):
+        import uuid
+
+        quiz_id = f"quiz_{uuid.uuid4().hex[:8]}"
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute("INSERT INTO quizzes (quiz_id) VALUES (?)", (quiz_id,))
+            for q in questions:
+                cur.execute(
+                    """
+                    INSERT INTO questions (id, quiz_id, question, type, options, answer, explanation, topic)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        q["id"],
+                        quiz_id,
+                        q["question"],
+                        q["type"],
+                        json.dumps(q.get("options")),
+                        q["answer"],
+                        q.get("explanation"),
+                        q.get("topic"),
+                    ),
+                )
+            conn.commit()
+        return quiz_id
+
+    def get_question(self, quiz_id, offset):
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT id, question, type, options FROM questions
+                WHERE quiz_id=? LIMIT 1 OFFSET ?
+            """,
+                (quiz_id, offset),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return {
+                "id": row[0],
+                "question": row[1],
+                "type": row[2],
+                "options": json.loads(row[3]) if row[3] else None,
+            }
+
+    def save_result(self, quiz_id, question_id, user_answer, correct, score):
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO results (quiz_id, question_id, user_answer, correct, score)
+                VALUES (?, ?, ?, ?, ?)
+            """,
+                (quiz_id, question_id, user_answer, int(correct), score),
+            )
+            conn.commit()
+
+    def get_summary(self, quiz_id):
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT COUNT(*), SUM(correct) FROM results WHERE quiz_id=?
+            """,
+                (quiz_id,),
+            )
+            total, correct = cur.fetchone()
+            return {"total": total or 0, "correct": correct or 0}

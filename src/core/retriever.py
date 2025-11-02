@@ -1,5 +1,6 @@
-from typing import List, Dict, Any
 import re
+from typing import List, Dict, Any
+from core.embeddings import EmbeddingManager
 
 
 def normalize_query(query: str) -> str:
@@ -9,10 +10,10 @@ def normalize_query(query: str) -> str:
 
 
 class Retriever:
-    def __init__(self, embedder):
+    def __init__(self, embedder: EmbeddingManager):
         self.embedder = embedder
 
-    def retrieve(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int) -> List[Dict[str, Any]]:
         """
         Retrieves top-k chunks from the embedding store for a query.
         Each dict contains:
