@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Tutor</title>
+  <link rel="stylesheet" href="style-chat.css">
+</head>
+<body>
+  <canvas id="network"></canvas>
+
+ 
+  <header class="top-bar">
+    <button id="home-btn" class="neon-btn"> Back</button>
+    <div class="mode-switch">
+      <button id="study-mode" class="mode active">Study</button>
+      <button id="quiz-mode" class="mode">Quiz</button>
+    </div>
+  </header>
+
+  
+  <main class="main-area">
+   
+    <aside class="sources-panel">
+      <h3>📂 Sources</h3>
+      <ul id="sources-list"></ul>
+      <label class="upload-btn">
+        ➕ Add files
+        <input type="file" id="file-upload" multiple />
+      </label>
+    </aside>
+
+    
+    <section class="chat-container">
+      <div class="chat-box" id="chat-box">
+        <div class="message ai">Hello 👋 I'm your AI Tutor. Upload materials to start learning.</div>
+      </div>
+
+      <div class="chat-input">
+        <input type="text" id="user-input" placeholder="Type your question or answer..." />
+        <button id="send-btn" class="send-arrow">➤</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="chat.js"></script>
+</body>
+</html>
+

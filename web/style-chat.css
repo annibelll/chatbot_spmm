@@ -1,0 +1,210 @@
+/* ==== БАЗА ==== */
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at center, #02060d 0%, #000 100%);
+  font-family: 'Segoe UI', sans-serif;
+  color: #e6f6ff;
+  overflow: hidden;
+}
+
+/* ==== CANVAS ==== */
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ==== ВЕРХНЯ ПАНЕЛЬ ==== */
+.top-bar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+  z-index: 10;
+  background: rgba(0, 10, 25, 0.6);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
+}
+
+.neon-btn {
+  background: transparent;
+  border: 1px solid #00bfff;
+  color: #00bfff;
+  border-radius: 8px;
+  padding: 6px 18px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+.neon-btn:hover {
+  background: #00bfff;
+  color: #000;
+  box-shadow: 0 0 20px #00bfff;
+  transform: translateY(-1px);
+}
+
+.mode-switch {
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  gap: 15px;
+  flex: 1; 
+}
+.mode {
+  background: transparent;
+  border: 1px solid #00bfff;
+  color: #00bfff;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.mode.active {
+  background: #00bfff;
+  color: #000;
+  box-shadow: 0 0 20px #00bfff;
+  font-weight: 600;
+}
+
+
+.main-area {
+  flex: 1;
+  display: flex;
+  gap: 25px;
+  padding: 30px;
+  z-index: 5;
+}
+
+.sources-panel {
+  width: 260px;
+  background: rgba(0, 10, 25, 0.75);
+  border-radius: 14px;
+  box-shadow: 0 0 25px rgba(0, 191, 255, 0.15);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(0, 191, 255, 0.25);
+}
+.sources-panel h3 {
+  color: #00bfff;
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  border-bottom: 1px solid rgba(0, 191, 255, 0.3);
+  padding-bottom: 6px;
+}
+.sources-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+.sources-panel li {
+  background: rgba(0, 191, 255, 0.1);
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.upload-btn {
+  display: inline-block;
+  border: 1px solid #00bfff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #00bfff;
+  text-align: center;
+  transition: 0.3s;
+}
+.upload-btn:hover {
+  background: #00bfff;
+  color: black;
+  box-shadow: 0 0 10px #00bfff;
+}
+.upload-btn input {
+  display: none;
+}
+
+
+.chat-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 20px;
+  background: rgba(0, 5, 15, 0.75);
+  border: 1px solid rgba(0, 191, 255, 0.25);
+  box-shadow: 0 0 30px rgba(0, 191, 255, 0.15);
+  backdrop-filter: blur(12px);
+  padding: 20px;
+}
+
+.chat-box {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  max-width: 75%;
+  padding: 10px 15px;
+  border-radius: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+  box-shadow: 0 0 10px rgba(0, 191, 255, 0.15);
+}
+.message.user {
+  background: #00bfff;
+  color: #000;
+  align-self: flex-end;
+}
+.message.ai {
+  background: rgba(0, 191, 255, 0.15);
+  border: 1px solid rgba(0, 191, 255, 0.3);
+}
+
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 10, 20, 0.8);
+  border-radius: 12px;
+  padding: 10px;
+  margin-top: 12px;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+}
+.chat-input input {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 10px;
+  font-size: 1rem;
+  outline: none;
+}
+.chat-input button {
+  background: #00bfff;
+  border: none;
+  color: black;
+  font-size: 1.2rem;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.chat-input button:hover {
+  box-shadow: 0 0 20px #00bfff;
+  transform: translateY(-1px);
+}
