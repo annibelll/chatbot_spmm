@@ -1,3 +1,4 @@
+from config.constants import DEFAULT_RESPONSE_LANGUAGE
 from core.llm import evaluate_open_answer
 from core.quiz.store import QuizStore
 
@@ -31,5 +32,5 @@ class Evaluator:
             return is_correct, feedback, score
 
         # Open-ended → LLM is used for semantic comparison
-        eval_result = evaluate_open_answer(q[0], correct_answer, user_answer)
+        eval_result = evaluate_open_answer(q[0], correct_answer, user_answer, DEFAULT_RESPONSE_LANGUAGE)
         return eval_result["correct"], eval_result["feedback"], eval_result["score"]

@@ -56,27 +56,41 @@ def evaluate_open_answer(
     question: str,
     reference_answer: str,
     user_answer: str,
-    response_language: str = DEFAULT_RESPONSE_LANGUAGE,
+    response_language: str,
 ) -> Dict[str, Any]:
+
+    print(f"evaluating user answer in {response_language}")
+
     prompt = f"""
 You are a fair teacher grading a student's open-ended answer.
-Evaluate how closely the student's answer matches the reference answer.
 
-Grading scale:
-- 0-4 points: mostly incorrect or irrelevant
-- 5-7 points: partially correct or incomplete
-- 8-10 points: accurate and complete
+Your steps:
+1. Compare the student's answer to the reference answer.
+2. Assign a score in this scale:
+   - 0-4: mostly incorrect or irrelevant
+   - 5-7: partially correct or incomplete
+   - 8-10: accurate and complete
+3. Write feedback in {response_language}.
 
 Question: {question}
-
 Reference Answer: {reference_answer}
 Student Answer: {user_answer}
 
-Respond STRICTLY in JSON:
+IMPORTANT:
+- Respond ONLY with a valid JSON object.
+- Write all feedback text ONLY in {response_language}.
+- If you cannot follow these rules, respond with `{{
+  "score": 0,
+  "feedback": "Erreur."
+}}`.
+
+EXAMPLE OUTPUT: 
 {{
-  "score": int (0-10),
-  "feedback": "{response_language} text feedback"
+  "score": 8,
+  "feedback": "La réponse de l'étudiant est complète et précise."
 }}
+
+Now grade according to instructions.
 """
 
     try:
@@ -104,8 +118,8 @@ Respond STRICTLY in JSON:
 
 def generate_quiz_questions(
     context_chunks: List[Dict[str, Any]],
-    num_questions: int = 3,
-    response_language: str = DEFAULT_RESPONSE_LANGUAGE,
+    num_questions,
+    response_language,
 ) -> List[Dict[str, Any]]:
 
     context_text = "\n\n".join(
@@ -113,68 +127,51 @@ def generate_quiz_questions(
         for chunk in context_chunks
     )
 
+    print(f"generating quiz questions in {response_language}")
+
     prompt = f"""
 You are an expert teacher creating a quiz STRICTLY and EXCLUSIVELY from the provided CONTEXT below.
-You must NOT use any external knowledge, guesses, or creative rewrite. ONLY leverage the text verbatim.
+
+DO NOT use any outside information—ONLY the context!
 
 YOUR TASK:
-- Generate EXACTLY {num_questions} quiz questions, mixing multiple-choice and open-ended.
-- ALL questions and answers MUST be based SOLELY on the context provided—NO exceptions.
-- Every question MUST be factual, concise, and answerable ONLY from the context.
-- Each question should have a short topic string summarizing what it's about.
+1. Generate EXACTLY {num_questions} quiz questions (mix multiple-choice and open-ended).
+2. ALL questions and answers MUST be based SOLELY on the context provided—NO exceptions.
+3. Each question must be factual, concise, and answerable from the context only.
+4. Each question must have a short topic string.
 
-LANGUAGE:
-- Write ALL questions, answers, and topics ONLY in {response_language}.
-- Do not use any other language.
+LANGUAGE IMPORTANT:
+- Write ALL values in {response_language}: "question", "topic", "options", "answer".
+- JSON field names ("type", "question", "topic", "options", "answer") must stay ENGLISH.
+- For multiple-choice, do NOT translate "multiple_choice", for open-ended do NOT translate "open_ended".
+- If you cannot follow these language rules, return ONLY '[]'.
 
-OUTPUT FORMAT:
-- Your output MUST be a JSON array ONLY.
-- Do NOT include any explanation, comment, markdown, extra text, labels, or formatting—JUST the JSON.
-- Each array item must have this exact structure:
+FORMAT IMPORTANT:
+- Output ONLY a JSON array, nothing else.
+- Each item must match this EXACT structure.
 
-[
-  {{
-    "type": "multiple_choice" or "open_ended",
-    "question": "string",       // Clear and concise question based only on context
-    "topic": "string",          // Short topic summary (from context)
-    "options": ["option1", "option2", "option3", "option4"] OR null, // For MC: 4 plain answer texts, NO labels. For open-ended: null.
-    "answer": "string"          // For MC: MUST be EXACTLY one of options. For open-ended: factual answer from context.
-  }},
-  {{ ... }},
-  {{ ... }}
-]
-
-IMPORTANT RULES:
-- For multiple-choice, provide EXACTLY 4 answer texts, with NO "A/B/C/D" or numbering.
-- For multiple-choice, "answer" must be EXACTLY one of the 4 options.
-- For open-ended, "options" must be null.
-- NEVER include explanations, comments, formatting, markdown, metadata, or repeated text.
-- NEVER use any knowledge outside the provided context.
-- Do NOT invent, speculate, or generalize beyond the context.
-
-EXAMPLE OUTPUT STRUCTURE:
+EXAMPLE OUTPUT:
 [
   {{
     "type": "multiple_choice",
-    "question": "What is the main ingredient in soup X?",
-    "topic": "Ingredients",
-    "options": ["rice", "potato", "chicken", "beans"],
-    "answer": "chicken"
+    "question": "Quelle est la couleur principale de l'objet X?",
+    "topic": "Couleur",
+    "options": ["rouge", "vert", "bleu", "jaune"],
+    "answer": "bleu"
   }},
   {{
     "type": "open_ended",
-    "question": "List the two steps for process Y.",
-    "topic": "Steps",
+    "question": "Décrivez les deux étapes du processus Y.",
+    "topic": "Étapes",
     "options": null,
-    "answer": "Mix ingredients and cook for 10 minutes."
-  }},
-  ...
+    "answer": "Ajouter les ingrédients et cuire pendant 10 minutes."
+  }}
 ]
 
 CONTEXT START
 {context_text}
 CONTEXT END
-PLEASE RETURN ONLY A JSON ARRAY OF QUESTIONS WITH NO EXTRA TEXT.
+REMEMBER: Respond only in {response_language}. Output only the JSON array. Do NOT translate JSON field names.
 """
 
     try:
