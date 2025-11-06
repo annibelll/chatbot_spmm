@@ -8,9 +8,8 @@ from .dependency import get_processor, get_quiz_generator, get_quiz_engine
 
 
 class QuizCreateRequest(BaseModel):
-    topic: str = ""
-    num_questions: int = 5
-    language: str = "en"
+    num_questions: int
+    language: str
 
 
 class QuizCreateResponse(BaseModel):
@@ -51,8 +50,7 @@ async def create_quiz(req: QuizCreateRequest):
         raise HTTPException(status_code=404, detail="No documents found.")
 
     await get_processor().process_files(files)
-    quiz_id = await get_quiz_generator().generate(
-        topic=req.topic,
+    quiz_id = await get_quiz_generator().generate_general(
         num_questions=req.num_questions,
         response_language=req.language,
     )

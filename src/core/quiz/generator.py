@@ -10,18 +10,16 @@ class QuizGenerator:
         self.retriever = retriever
         self.store = store
 
-    async def generate(
+    async def generate_general(
         self,
-        topic: str,
         num_questions: int,
         response_language: str,
     ):
-        chunks = self.retriever.retrieve(topic, top_k=NUMBER_OF_QUIZ_CHUNKS)
+        chunks = self.retriever.retrieve(query="", top_k=NUMBER_OF_QUIZ_CHUNKS)
 
         llm_response = generate_quiz_questions(
             chunks, num_questions=num_questions, response_language=response_language
         )
-        # Expected format: list of dicts {type, question, topic, options, answer}
 
         print(f"Generated quiz questions by LLM are: {llm_response}")
 

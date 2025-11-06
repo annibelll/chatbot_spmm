@@ -9,7 +9,7 @@ from pathlib import Path
 
 class ChatRequest(BaseModel):
     query: str
-    language: str = "en"
+    language: str
 
 
 class ChatResponse(BaseModel):
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 
 @router.post("/", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    """Ask a question about uploaded documents."""
+    print(f"incoming req: {req}")
     upload_path = Path(UPLOAD_DIR)
     files = discover_files(upload_path)
     if not files:
