@@ -1,6 +1,6 @@
-import sqlite3
 import uuid
-from typing import Dict
+import sqlite3
+from typing import Dict, List
 from config.constants import SQL3_PATH
 
 
@@ -109,3 +109,36 @@ class UserManager:
                     for t in topics
                 ],
             }
+
+    def get_weak_topics(self, user_id: str, threshold: float = 70.0) -> List[str]:
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+            SELECT topic, attempts, correct FROM user_topic_stats WHERE user_id=?
+            """,
+                (user_id,),
+            )
+            rows = cur.fetchall()
+            print(f"rows in weak_topics: {rows}")
+            return [r[0] for r in rows if r[1] >= 1 and (r[2] / r[1] * 100) < threshold]
+
+    def get_user_summary(self, user_id: str) -> Dict:
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+            SELECT SUM(attempts), SUM(correct)
+            FROM user_topic_stats
+            WHERE user_id=?
+            """,
+                (user_id,),
+            )
+        total_attempts, total_correct = cur.fetchone()
+        if not total_attempts:
+            return {"attempts": 0, "correct": 0, "accuracy": 0}
+        return {
+            "attempts": total_attempts,
+            "correct": total_correct,
+            "accuracy": round(total_correct / total_attempts * 100, 2),
+        }
