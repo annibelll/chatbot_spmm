@@ -1,3 +1,4 @@
+import sys
 import asyncio
 from pathlib import Path
 from core.retriever import Retriever
@@ -45,7 +46,7 @@ async def demo_explaination(
     print("\nRetrieved context chunks:")
     for i, chunk in enumerate(context_chunks):
         print(
-            f"Chunk {i+1} [{chunk['file_id']}.{chunk['file_ext']}]: {chunk['text'][:150]}..."
+            f"Chunk {i+1} [{chunk['file_id']}.{chunk['file_ext']}]: {chunk['text'][:200]}..."
         )
 
     print("User's query: ", query)
@@ -100,9 +101,27 @@ async def demo_quiz(
             break
 
     profile = user_manager.get_user_profile(user_id)
-    print(profile)
+    print(f"user's profile: {profile}")
+
+    weak_topics = user_manager.get_weak_topics(user_id=user_id, threshold=60)
+    print(f"user's weak topics: {weak_topics}")
+
+    user_summary = user_manager.get_user_summary(user_id)
+    print(f"user's summary: {user_summary}")
 
 
 if __name__ == "__main__":
-    asyncio.run(demo_explaination())
-    # asyncio.run(demo_quiz())
+
+    if len(sys.argv) < 2:
+        asyncio.run(demo_explaination())
+        sys.exit(1)
+
+    arg = sys.argv[1]
+
+    if arg == "expl":
+        asyncio.run(demo_explaination())
+    elif arg == "quiz":
+        asyncio.run(demo_quiz())
+    else:
+        print("no relevant mode, opting for expl")
+        asyncio.run(demo_explaination())
