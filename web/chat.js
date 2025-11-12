@@ -70,6 +70,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     quizBtn.onclick = () => switchMode("quiz");
   }
 
+ 
+  const profileBtn = document.getElementById("profile-btn");
+  if (profileBtn) {
+    profileBtn.addEventListener("click", () => {
+      const userId = localStorage.getItem("user_id") || "guest";
+      window.location.href = `profile.html?user_id=${encodeURIComponent(userId)}`;
+    });
+  }
+
   const sendBtn = document.getElementById("send-btn");
   const input = document.getElementById("user-input");
   const chatBox = document.getElementById("chat-box");
@@ -81,7 +90,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (input) input.addEventListener("keypress", e => {
     if (e.key === "Enter") sendMessage();
   });
-
   await loadExistingFiles();
 
   if (fileInput && sourcesList) {
@@ -259,75 +267,78 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   function showQuestion(q) {
-    currentQuestionId = q.id;
-    const qBox = document.createElement("div");
-    qBox.classList.add("message", "ai");
-    qBox.innerHTML = `<strong>${q.question}</strong>`;
+  currentQuestionId = q.id;
+  const qBox = document.createElement("div");
+  qBox.classList.add("message", "ai");
+  qBox.innerHTML = `<strong>${q.question}</strong>`;
 
+
+  if (q.options && q.options.length > 0) {
     const optionsContainer = document.createElement("div");
-
-    // --- виправлений блок ---
-    if (q.options && q.options.length > 0) {
-      q.options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.classList.add("quiz-option");
-        btn.textContent = opt;
-        btn.onclick = () => sendAnswer(opt);
-        optionsContainer.appendChild(btn);
-      });
-    } else {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.placeholder = "Type your answer...";
-      input.classList.add("quiz-input");
-
-      const submit = document.createElement("button");
-      submit.textContent = "Submit";
-      submit.classList.add("quiz-submit");
-      submit.onclick = () => {
-        const val = input.value.trim();
-        if (val) sendAnswer(val);
-      };
-
-      optionsContainer.appendChild(input);
-      optionsContainer.appendChild(submit);
-    }
-
+    q.options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.classList.add("quiz-option");
+      btn.textContent = opt;
+      btn.onclick = () => sendAnswer(opt);
+      optionsContainer.appendChild(btn);
+    });
     qBox.appendChild(optionsContainer);
-    chatBox.appendChild(qBox);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+  } else {
+    
+    const msg = document.createElement("div");
+    msg.classList.add("message", "ai");
+    msg.textContent = "Type your answer in the main chat input and press Enter ⌨️";
+    chatBox.appendChild(msg);
 
-  async function sendAnswer(selectedOption) {
-    try {
-      const res = await fetch("http://127.0.0.1:8000/quiz/answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question_id: currentQuestionId,
-          user_answer: selectedOption
-        })
-      });
-
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
-      const data = await res.json();
-
-      const feedback = document.createElement("div");
-      feedback.classList.add("message", "ai");
-      feedback.textContent = data.feedback || (data.correct ? "✅ Correct!" : "❌ Incorrect.");
-      chatBox.appendChild(feedback);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      if (data.next_question) {
-        showQuestion(data.next_question);
-      } else if (data.summary) {
-        const summary = document.createElement("div");
-        summary.classList.add("message", "ai");
-        summary.textContent = `🏁 Quiz complete! Your score: ${data.summary.score}/${data.summary.total}`;
-        chatBox.appendChild(summary);
+  
+    const oldHandler = input.onkeypress;
+    input.onkeypress = async (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const userAnswer = input.value.trim();
+        if (!userAnswer) return;
+        input.value = "";
+        input.onkeypress = oldHandler; 
+        await sendAnswer(userAnswer);
       }
-    } catch (err) {
-      console.error(err);
-    }
+    };
   }
+
+  chatBox.appendChild(qBox);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function sendAnswer(selectedOption) {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/quiz/answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question_id: currentQuestionId,
+        user_answer: selectedOption
+      })
+    });
+
+    if (!res.ok) throw new Error(`Error: ${res.status}`);
+    const data = await res.json();
+
+    const feedback = document.createElement("div");
+    feedback.classList.add("message", "ai");
+    feedback.textContent = data.feedback || (data.correct ? "✅ Correct!" : "❌ Incorrect.");
+    chatBox.appendChild(feedback);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    if (data.next_question) {
+      showQuestion(data.next_question);
+    } else if (data.summary) {
+      const summary = document.createElement("div");
+      summary.classList.add("message", "ai");
+      summary.textContent = `🏁 Quiz complete! Your score: ${data.summary.score}/${data.summary.total}`;
+      chatBox.appendChild(summary);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 });

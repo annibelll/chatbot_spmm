@@ -257,7 +257,6 @@ canvas {
   margin-top: 10px;
 }
 
-/* Delete all — повністю повторює Add files */
 .delete-all-btn {
   display: inline-block;
   border: 1px solid #00bfff;
@@ -279,3 +278,50 @@ canvas {
   box-shadow: 0 0 10px #00bfff;
 }
 
+.top-bar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+  z-index: 10;
+  background: rgba(0, 10, 25, 0.6);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
+}
+
+.neon-btn,
+.mode {
+  background: transparent;
+  border: 1px solid #00bfff;
+  color: #00bfff;
+  border-radius: 8px;
+  padding: 6px 18px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+  font-size: 1rem;
+}
+
+.neon-btn:hover,
+.mode:hover {
+  background: #00bfff;
+  color: #000;
+  box-shadow: 0 0 20px #00bfff;
+  transform: translateY(-1px);
+}
+
+.mode-switch {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+}
+
+.mode.active {
+  background: #00bfff;
+  color: #000;
+  box-shadow: 0 0 20px #00bfff;
+  font-weight: 600;
+}

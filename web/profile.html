@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Profile</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style-profile.css">
+</head>
+<body>
+  <canvas id="network"></canvas>
+
+  <header class="top-bar">
+    <button id="home-btn" class="neon-btn">Back</button>
+    <div class="mode-switch">
+      <h2 class="page-title">Student Profile</h2>
+    </div>
+  </header>
+
+  <main class="main-area">
+    <div class="profile-container">
+      
+      <div class="profile-card">
+        <h3>Performance Summary</h3>
+        <div class="profile-stats">
+          <p><strong>Average Score:</strong> <span id="avg-score">—</span></p>
+          <p><strong>Completed Quizzes:</strong> <span id="completed">—</span></p>
+          <p><strong>Best Topic:</strong> <span id="best-topic">—</span></p>
+          <p><strong>Weak Topic:</strong> <span id="weak-topic">—</span></p>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <h3>Recent Quiz Results</h3>
+        <table id="quiz-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Topic</th>
+              <th>Score</th>
+              <th>Accuracy</th>
+            </tr>
+          </thead>
+          <tbody id="quiz-history">
+           
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="profile.js"></script>
+</body>
+</html>
