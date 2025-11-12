@@ -1,7 +1,7 @@
 import uuid
 import json
 import sqlite3
-from config.constants import SQL3_PATH
+from src.config.constants import SQL3_PATH
 
 
 class QuizStore:

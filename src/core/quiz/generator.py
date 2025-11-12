@@ -1,8 +1,8 @@
 import uuid
-from core.llm import generate_quiz_questions
-from core.retriever import Retriever
-from core.quiz.store import QuizStore
-from config.constants import NUMBER_OF_QUIZ_CHUNKS
+from src.core.llm import generate_quiz_questions
+from src.core.retriever import Retriever
+from src.core.quiz.store import QuizStore
+from src.config.constants import NUMBER_OF_QUIZ_CHUNKS
 
 
 class QuizGenerator:
@@ -16,7 +16,6 @@ class QuizGenerator:
         response_language: str,
     ):
         chunks = self.retriever.retrieve(query="", top_k=NUMBER_OF_QUIZ_CHUNKS)
-
         llm_response = generate_quiz_questions(
             chunks, num_questions=num_questions, response_language=response_language
         )
@@ -25,14 +24,30 @@ class QuizGenerator:
 
         questions = []
         for q in llm_response:
+            answer = q.get("answer") or q.get("definition") or "No answer provided"
+
+            # 🔧 Обробка випадків, коли answer — список
+            if isinstance(answer, list):
+                if all(isinstance(a, str) for a in answer):
+                    answer = " ".join(answer)
+                elif all(isinstance(a, dict) for a in answer):
+                    # перетворюємо список словників у текст
+                    parts = []
+                    for a in answer:
+                        part = ", ".join(f"{k}: {v}" for k, v in a.items())
+                        parts.append(part)
+                    answer = " | ".join(parts)
+                else:
+                    answer = str(answer)
+
             questions.append(
                 {
                     "id": str(uuid.uuid4())[:8],
-                    "type": q["type"],
-                    "question": q["question"],
+                    "type": q.get("type", "open"),
+                    "question": q.get("question") or q.get("term") or "Unknown question",
                     "topic": q.get("topic"),
-                    "options": q.get("options"),
-                    "answer": q.get("answer"),
+                    "options": q.get("options", []),
+                    "answer": answer,
                 }
             )
 

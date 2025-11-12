@@ -2,7 +2,7 @@ import hashlib
 from typing import List, Dict, Any
 from sentence_transformers import SentenceTransformer
 import chromadb
-from config.constants import (
+from src.config.constants import (
     CHROMA_COLLECTION_NAME,
     CHROMA_DB_SAVINGS,
     SENTENCE_TRANSFORMER_MODEL,
@@ -18,23 +18,17 @@ class EmbeddingManager:
     def encode_and_store_chunks(self, chunks: List[Dict[str, Any]]):
         if not chunks:
             return
-
         for idx, c in enumerate(chunks):
             c.setdefault("uid", str(idx))
             c["hash"] = self._hash_text(c["text"])
-
         ids = [f"{c['file_id']}_{c['uid']}" for c in chunks]
         existing = set(self.collection.get(ids=ids)["ids"])
         new_chunks = [c for c, id_ in zip(chunks, ids) if id_ not in existing]
-
         if not new_chunks:
             return
-
         texts = [c["text"] for c in new_chunks]
         metadatas = [{k: v for k, v in c.items() if k != "text"} for c in new_chunks]
         ids = [f"{c['file_id']}_{c['uid']}" for c in new_chunks]
-
-        print(f"Adding {len(new_chunks)} new chunks to collection...")
         embeddings = self.model.encode(texts, show_progress_bar=False)
         self.collection.add(
             documents=texts,
@@ -42,7 +36,6 @@ class EmbeddingManager:
             ids=ids,
             metadatas=metadatas,
         )
-        print(f"Collection now contains {self.collection.count()} total documents.")
 
     def query(self, query_text: str, top_k: int):
         query_vec = self.model.encode([query_text])[0]
@@ -50,6 +43,22 @@ class EmbeddingManager:
             query_embeddings=[query_vec.tolist()], n_results=top_k
         )
         return results
+
+    def delete_by_filename(self, filename: str):
+        try:
+            filename = filename.strip().lower()
+            file_id = filename.split(".")[0]
+            self.collection.delete(where={"file_id": file_id})
+            print(f"✅ Embeddings for '{filename}' deleted.")
+        except Exception as e:
+            print(f"❌ Error deleting embeddings for {filename}: {e}")
+
+    def clear_database(self):
+        try:
+            self.collection.delete(where={})
+            print("🧹 All embeddings cleared from collection.")
+        except Exception as e:
+            print(f"❌ Error clearing database: {e}")
 
     def _hash_text(self, text: str) -> str:
         return hashlib.sha1(text.encode("utf-8")).hexdigest()[:10]

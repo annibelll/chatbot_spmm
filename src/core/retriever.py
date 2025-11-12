@@ -1,6 +1,6 @@
 import re
 from typing import List, Dict, Any
-from core.embeddings import EmbeddingManager
+from src.core.embeddings import EmbeddingManager
 
 
 def normalize_query(query: str) -> str:

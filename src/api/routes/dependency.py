@@ -1,11 +1,11 @@
-from core.async_processor import FileProcessor
-from core.embeddings import EmbeddingManager
-from core.retriever import Retriever
-from core.user.manager import UserManager
-from core.quiz.store import QuizStore
-from core.quiz.engine import QuizEngine
-from core.quiz.generator import QuizGenerator
-from core.quiz.evaluator import Evaluator
+from src.core.async_processor import FileProcessor
+from src.core.embeddings import EmbeddingManager
+from src.core.retriever import Retriever
+from src.core.user.manager import UserManager
+from src.core.quiz.store import QuizStore
+from src.core.quiz.engine import QuizEngine
+from src.core.quiz.generator import QuizGenerator
+from src.core.quiz.evaluator import Evaluator
 
 processor = FileProcessor()
 embedder = EmbeddingManager()

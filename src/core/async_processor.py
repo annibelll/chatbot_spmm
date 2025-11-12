@@ -2,11 +2,11 @@ import uuid
 import asyncio
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-from core.processor import extract_text
-from core.chunker import chunk_text
-from core.embeddings import EmbeddingManager
-from core.registry import FileRegistry
-from config.constants import MAX_CONCURENT_FILES, BATCH_SIZE
+from src.core.processor import extract_text
+from src.core.chunker import chunk_text
+from src.core.embeddings import EmbeddingManager
+from src.core.registry import FileRegistry
+from src.config.constants import MAX_CONCURENT_FILES, BATCH_SIZE
 
 
 class FileProcessor:

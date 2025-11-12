@@ -1,7 +1,7 @@
 import uuid
 import sqlite3
 from typing import Dict, List
-from config.constants import SQL3_PATH
+from src.config.constants import SQL3_PATH
 
 
 class UserManager:

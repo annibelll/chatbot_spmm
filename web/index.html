@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="uk">
 <head>
   <meta charset="utf-8">
   <title>AI Network</title>
@@ -7,15 +7,26 @@
   <link rel="stylesheet" href="style-home.css">
 </head>
 <body>
+
   <canvas id="network"></canvas>
 
+  
   <div class="overlay">
     <h1 class="title">Welcome to your AI Chatbot</h1>
+
+   
+    <div class="input-group">
+      <label for="username">Enter your username:</label>
+      <input type="text" id="username" name="username">
+    </div>
+
+    <!-- Кнопка запуску -->
     <div class="buttons">
       <button id="start">Start Learning</button>
     </div>
   </div>
 
+  
   <script src="home.js"></script>
 </body>
 </html>

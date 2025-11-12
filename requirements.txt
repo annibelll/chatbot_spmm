@@ -9,3 +9,4 @@ openai-whisper
 requests
 python-multipart
 langdetect
+python-docx

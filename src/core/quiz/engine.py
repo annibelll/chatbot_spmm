@@ -1,6 +1,6 @@
-from core.quiz.store import QuizStore
-from core.quiz.evaluator import Evaluator
-from core.user.manager import UserManager
+from src.core.quiz.store import QuizStore
+from src.core.quiz.evaluator import Evaluator
+from src.core.user.manager import UserManager
 
 
 class QuizEngine:

@@ -1,6 +1,6 @@
-from config.constants import DEFAULT_RESPONSE_LANGUAGE
-from core.llm import evaluate_open_answer
-from core.quiz.store import QuizStore
+from src.config.constants import DEFAULT_RESPONSE_LANGUAGE
+from src.core.llm import evaluate_open_answer
+from src.core.quiz.store import QuizStore
 
 
 class Evaluator:

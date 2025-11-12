@@ -1,9 +1,12 @@
-UPLOAD_DIR = "./data/uploads"
+from pathlib import Path
+
+UPLOAD_DIR = Path(r"C:\Users\anbie\Downloads\New folder\chatbot_spmm\src\data\uploads")
+
 SQL3_PATH = "./data/registry.db"
 DEFAULT_RESPONSE_LANGUAGE = "English"
 
 OLLAMA_API_URL = "http://localhost:11434/api"
-LLM_MODEL = "mistral"
+LLM_MODEL = "mistral:latest"
 
 CHROMA_DB_SAVINGS = "./data/embeddings"
 SENTENCE_TRANSFORMER_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"

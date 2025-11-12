@@ -1,4 +1,3 @@
-
 const canvas = document.getElementById("network");
 const ctx = canvas.getContext("2d");
 
@@ -62,7 +61,60 @@ draw();
 
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("start");
+  const usernameInput = document.getElementById("username");
+  const clearBtn = document.getElementById("clear-btn"); // кнопка для очищення бази
+  const fileList = document.getElementById("sources-list"); // список файлів (якщо є)
+
   if (startBtn) {
-    startBtn.addEventListener("click", () => window.location.href = "chat.html");
+    startBtn.addEventListener("click", async () => {
+      const username = usernameInput.value.trim();
+      if (!username) {
+        alert("Please enter your username.");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/users/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ name: username })
+        });
+
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        const data = await response.json();
+
+        localStorage.setItem("username", data.name);
+        localStorage.setItem("user_id", data.user_id);
+
+        window.location.href = "chat.html";
+      } catch (error) {
+        console.error("Connection error:", error);
+        alert("Failed to connect to the server");
+      }
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", async () => {
+      if (!confirm("Are you sure you want to clear all data?")) return;
+
+      
+      if (fileList) fileList.innerHTML = "";
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/clear_embeddings", {
+          method: "DELETE"
+        });
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        const data = await response.json();
+        alert(data.message || "Embedding database cleared.");
+      } catch (err) {
+        console.error("Failed to clear embeddings:", err);
+        alert("Error clearing database.");
+      }
+    });
   }
 });
+

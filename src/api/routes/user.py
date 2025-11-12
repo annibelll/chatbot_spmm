@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
-from api.routes.dependency import get_user_manager
+from src.api.routes.dependency import get_user_manager
 
 
 class UserRequest(BaseModel):

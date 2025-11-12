@@ -1,7 +1,7 @@
 import json
 import requests
 from typing import List, Dict, Any
-from config.constants import (
+from src.config.constants import (
     CORRECTNESS_TRESHOLD,
     DEFAULT_RESPONSE_LANGUAGE,
     OLLAMA_API_URL,

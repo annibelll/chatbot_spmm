@@ -2,8 +2,8 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Query
-from core.utils.file_discovery import discover_files
-from config.constants import UPLOAD_DIR
+from src.core.utils.file_discovery import discover_files
+from src.config.constants import UPLOAD_DIR
 from .dependency import get_processor, get_quiz_generator, get_quiz_engine
 
 
@@ -63,7 +63,10 @@ def start_quiz(quiz_id: str, user_id: str = Query(...)):
     q = get_quiz_engine().start(user_id, quiz_id)
     if not q:
         raise HTTPException(status_code=404, detail="No questions found.")
+    if "question" not in q:
+        q["question"] = q.get("term") or "Unknown question"
     return QuizQuestionResponse(**q)
+
 
 
 @router.post("/answer", response_model=QuizAnswerResponse)
