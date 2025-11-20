@@ -42,7 +42,7 @@ class QuizStore:
                 user_answer TEXT,
                 correct INTEGER,
                 score REAL,
-                FOREIGN KEY(user_id) REFERENCES users(user_id)
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             """
             )
@@ -50,6 +50,7 @@ class QuizStore:
 
     def create_quiz(self, questions):
         quiz_id = f"quiz_{uuid.uuid4().hex[:8]}"
+        quiz_topic = self.detect_quiz_topic(questions)
         with self._connect() as conn:
             cur = conn.cursor()
             cur.execute("INSERT INTO quizzes (quiz_id) VALUES (?)", (quiz_id,))
@@ -66,7 +67,7 @@ class QuizStore:
                         q["type"],
                         json.dumps(q.get("options")),
                         q["answer"],
-                        q.get("topic"),
+                        q.get("topic", quiz_topic),
                     ),
                 )
             conn.commit()
@@ -77,14 +78,18 @@ class QuizStore:
             cur = conn.cursor()
             cur.execute(
                 """
-                SELECT id, question, type, options FROM questions
-                WHERE quiz_id=? LIMIT 1 OFFSET ?
-            """,
+                SELECT id, question, type, options
+                FROM questions
+                WHERE quiz_id=?
+                LIMIT 1 OFFSET ?
+                """,
                 (quiz_id, offset),
             )
             row = cur.fetchone()
+
             if not row:
                 return None
+
             return {
                 "id": row[0],
                 "question": row[1],
@@ -100,7 +105,14 @@ class QuizStore:
                 INSERT INTO results (quiz_id, question_id, user_id, user_answer, correct, score)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (quiz_id, question_id, user_id, user_answer, int(correct), score),
+                (
+                    quiz_id,
+                    question_id,
+                    user_id,
+                    user_answer,
+                    int(correct),
+                    score
+                ),
             )
             conn.commit()
 
@@ -109,9 +121,49 @@ class QuizStore:
             cur = conn.cursor()
             cur.execute(
                 """
-                SELECT COUNT(*), SUM(correct) FROM results WHERE quiz_id=?
-            """,
+                SELECT COUNT(*), SUM(correct)
+                FROM results
+                WHERE quiz_id=?
+                """,
                 (quiz_id,),
             )
             total, correct = cur.fetchone()
-            return {"total": total or 0, "correct": correct or 0}
+
+        return {
+            "total": total or 0,
+            "correct": correct or 0
+        }
+    def detect_quiz_topic(self, questions):
+        topics = [q.get("topic") for q in questions if q.get("topic")]
+        if not topics:
+            return "General"
+        return max(set(topics), key=topics.count)
+
+    def get_last_quizzes(self, user_id, limit=3):
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+            """
+            SELECT 
+                q.quiz_id,
+                AVG(r.score) AS avg_score,
+                q.created_at
+            FROM quizzes q
+            JOIN results r ON q.quiz_id = r.quiz_id
+            WHERE r.user_id = ?
+            GROUP BY q.quiz_id
+            ORDER BY q.created_at DESC
+            LIMIT ?
+            """,
+            (user_id, limit),
+        )
+        rows = cur.fetchall()
+
+        return [
+            {
+                "quiz_id": quiz_id,
+                "average_score": avg_score,
+                "created_at": created_at
+            }
+            for quiz_id, avg_score, created_at in rows
+        ]

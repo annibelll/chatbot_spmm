@@ -1,11 +1,16 @@
 from pathlib import Path
+from pathlib import Path
 
-UPLOAD_DIR = Path(r"C:\Users\anbie\Downloads\New folder\chatbot_spmm\src\data\uploads")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]  
+UPLOAD_DIR = PROJECT_ROOT / "src" / "data" / "uploads"
+
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
 
 SQL3_PATH = "./data/registry.db"
 DEFAULT_RESPONSE_LANGUAGE = "English"
 
-OLLAMA_API_URL = "http://localhost:11434/api"
+OLLAMA_API_URL = "https://ollama.kucy.online/api"
 LLM_MODEL = "mistral:latest"
 
 CHROMA_DB_SAVINGS = "./data/embeddings"

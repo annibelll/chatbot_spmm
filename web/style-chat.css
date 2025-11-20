@@ -7,7 +7,7 @@ body {
   background: radial-gradient(circle at center, #02060d 0%, #000 100%);
   font-family: 'Segoe UI', sans-serif;
   color: #e6f6ff;
-  overflow: hidden;
+  overflow: auto;
 }
 
 

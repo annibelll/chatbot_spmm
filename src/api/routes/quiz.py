@@ -50,33 +50,47 @@ async def create_quiz(req: QuizCreateRequest):
         raise HTTPException(status_code=404, detail="No documents found.")
 
     await get_processor().process_files(files)
-    quiz_id = await get_quiz_generator().generate_general(
+
+    quiz_id, total = await get_quiz_generator().generate_general(
         num_questions=req.num_questions,
         response_language=req.language,
     )
 
-    return QuizCreateResponse(quiz_id=quiz_id, total_questions=req.num_questions)
+    return QuizCreateResponse(
+        quiz_id=quiz_id,
+        total_questions=total
+    )
 
 
 @router.get("/{quiz_id}/start", response_model=QuizQuestionResponse)
 def start_quiz(quiz_id: str, user_id: str = Query(...)):
     q = get_quiz_engine().start(user_id, quiz_id)
+
     if not q:
         raise HTTPException(status_code=404, detail="No questions found.")
+
     if "question" not in q:
         q["question"] = q.get("term") or "Unknown question"
+
+    if "id" not in q or not q["id"]:
+        q["id"] = str(uuid.uuid4())
+
     return QuizQuestionResponse(**q)
-
-
 
 @router.post("/answer", response_model=QuizAnswerResponse)
 def answer_quiz(req: QuizAnswerRequest):
-    result = get_quiz_engine().answer(req.question_id, req.user_answer)
+    result = get_quiz_engine().answer(
+        req.question_id,
+        req.user_answer,
+        req.user_id
+    )
+
     next_q = result.get("next")
+
     return QuizAnswerResponse(
-        correct=result["correct"],
-        feedback=result["feedback"],
-        score=result["score"],
+        correct=result.get("correct", False),
+        feedback=result.get("feedback", ""),
+        score=result.get("score", 0),
         next_question=next_q,
         summary=result.get("summary"),
     )

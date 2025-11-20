@@ -38,7 +38,6 @@ function draw() {
     ctx.fill();
   }
 
-  // 🔹 Малюємо лінії між близькими точками
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const dx = nodes[i].x - nodes[j].x;
@@ -63,9 +62,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   resize();
   requestAnimationFrame(draw);
 
-
   const homeBtn = document.getElementById("home-btn");
-  if (homeBtn) homeBtn.onclick = () => window.location.href = "index.html";
+  if (homeBtn) homeBtn.onclick = () => window.location.href = "chat.html";
 
   const params = new URLSearchParams(window.location.search);
   const userId = params.get("user_id") || "guest";
@@ -74,23 +72,31 @@ window.addEventListener("DOMContentLoaded", async () => {
     const res = await fetch(`http://127.0.0.1:8000/users/weak_topics/${encodeURIComponent(userId)}`);
     const data = await res.json();
 
-    document.getElementById("avg-score").textContent = data.average_score || "—";
-    document.getElementById("completed").textContent = data.completed_quizzes || "—";
-    document.getElementById("best-topic").textContent = data.best_topic || "—";
-    document.getElementById("weak-topic").textContent = data.weak_topic || "—";
+    const weakTopics = data.weak_topics || [];
+
+    document.getElementById("avg-score").textContent = "—";
+    document.getElementById("completed").textContent = "—";
+
+    document.getElementById("best-topic").textContent =
+      weakTopics.length > 0 ? weakTopics[0] : "—";
+
+    document.getElementById("weak-topic").textContent =
+      weakTopics.length > 0 ? weakTopics[weakTopics.length - 1] : "—";
 
     const tbody = document.getElementById("quiz-history");
     tbody.innerHTML = "";
-    (data.recent_quizzes || []).forEach(q => {
+
+    weakTopics.forEach(topic => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${q.date}</td>
-        <td>${q.topic}</td>
-        <td>${q.score}%</td>
-        <td>${q.accuracy}</td>
+        <td>—</td>
+        <td>${topic}</td>
+        <td>—</td>
+        <td>Low accuracy</td>
       `;
       tbody.appendChild(row);
     });
+
   } catch (err) {
     console.error("Error loading profile data:", err);
   }
