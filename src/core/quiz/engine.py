@@ -4,25 +4,23 @@ from src.core.user.manager import UserManager
 
 
 class QuizEngine:
-    def __init__(self, store: QuizStore, evaluator: Evaluator, user_manager: UserManager):
+    def __init__(
+        self, store: QuizStore, evaluator: Evaluator, user_manager: UserManager
+    ):
         self.store = store
         self.evaluator = evaluator
         self.user_manager = user_manager
 
     def start(self, user_id, quiz_id):
+        self.offset = 0
         self.user_id = user_id
         self.quiz_id = quiz_id
-        self.offset = 0
         self.summary = {"score": 0}
-
         return self.store.get_question(quiz_id, self.offset)
 
-    def answer(self, question_id: str, user_answer: str, user_id: str):
+    def answer(self, question_id: str, user_answer: str):
         correct, feedback, score = self.evaluator.evaluate(
-            self.quiz_id,
-            question_id,
-            user_answer,
-            user_id
+            self.quiz_id, question_id, user_answer
         )
 
         with self.store._connect() as conn:
@@ -44,24 +42,11 @@ class QuizEngine:
 
         self.summary["score"] += score
         self.offset += 1
-
         next_q = self.store.get_question(self.quiz_id, self.offset)
 
         if not next_q:
             summary = self.store.get_summary(self.quiz_id)
             summary["score"] = self.summary["score"]
+            return {"feedback": feedback, "next": None, "summary": summary}
 
-            return {
-                "correct": correct,
-                "feedback": feedback,
-                "score": score,
-                "next": None,
-                "summary": summary
-            }
-
-        return {
-            "correct": correct,
-            "feedback": feedback,
-            "score": score,
-            "next": next_q
-        }
+        return {"feedback": feedback, "next": next_q}

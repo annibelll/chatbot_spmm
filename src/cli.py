@@ -1,17 +1,17 @@
 import sys
 import asyncio
 from pathlib import Path
-from core.retriever import Retriever
-from core.async_processor import FileProcessor
-from core.llm import generate_answer
-from core.utils.file_discovery import discover_files
-from core.embeddings import EmbeddingManager
-from core.quiz.store import QuizStore
-from core.quiz.engine import QuizEngine
-from core.quiz.evaluator import Evaluator
-from core.quiz.generator import QuizGenerator
-from core.user.manager import UserManager
-from config.constants import (
+from src.core.retriever import Retriever
+from src.core.async_processor import FileProcessor
+from src.core.llm import generate_answer
+from src.core.utils.file_discovery import discover_files
+from src.core.embeddings import EmbeddingManager
+from src.core.quiz.store import QuizStore
+from src.core.quiz.engine import QuizEngine
+from src.core.quiz.evaluator import Evaluator
+from src.core.quiz.generator import QuizGenerator
+from src.core.user.manager import UserManager
+from src.config.constants import (
     UPLOAD_DIR,
     DEFAULT_RESPONSE_LANGUAGE,
     QUIZ_QUESTIONS_NUMBER,
@@ -25,7 +25,7 @@ user_manager = UserManager()
 
 
 async def demo_explaination(
-    upload_dir: str = UPLOAD_DIR, response_language: str = DEFAULT_RESPONSE_LANGUAGE
+    upload_dir=UPLOAD_DIR, response_language: str = DEFAULT_RESPONSE_LANGUAGE
 ):
     upload_path = Path(upload_dir)
     files_to_process = discover_files(upload_path)
@@ -40,7 +40,7 @@ async def demo_explaination(
 
     await processor.process_files(files_to_process)
 
-    query = "Explain the difference between AMF and SMF."
+    query = "Who is Jane Doe?"
     context_chunks = retriever.retrieve(query, top_k=5)
 
     print("\nRetrieved context chunks:")
@@ -56,7 +56,7 @@ async def demo_explaination(
 
 
 async def demo_quiz(
-    upload_dir: str = UPLOAD_DIR, response_language: str = DEFAULT_RESPONSE_LANGUAGE
+    upload_dir=UPLOAD_DIR, response_language: str = DEFAULT_RESPONSE_LANGUAGE
 ):
     user_name = input("Enter your name: ").strip() or "default_user"
     user_id = user_manager.get_or_create_user(user_name)

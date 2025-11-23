@@ -7,13 +7,13 @@ UPLOAD_DIR = PROJECT_ROOT / "src" / "data" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
-SQL3_PATH = "./data/registry.db"
-DEFAULT_RESPONSE_LANGUAGE = "English"
+SQL3_PATH = "./src/data/registry.db"
+DEFAULT_RESPONSE_LANGUAGE = "Slovak"
 
-OLLAMA_API_URL = "https://ollama.kucy.online/api"
+OLLAMA_API_URL = "http://localhost:11434/api"
 LLM_MODEL = "mistral:latest"
 
-CHROMA_DB_SAVINGS = "./data/embeddings"
+CHROMA_DB_SAVINGS = "./src/data/embeddings"
 SENTENCE_TRANSFORMER_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 CHROMA_COLLECTION_NAME = "documents"
 

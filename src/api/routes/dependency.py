@@ -14,7 +14,7 @@ retriever = Retriever(embedder)
 user_manager = UserManager()
 store = QuizStore()
 
-evaluator = Evaluator(store, user_manager)
+evaluator = Evaluator(store)
 engine = QuizEngine(store, evaluator, user_manager)
 generator = QuizGenerator(retriever, store)
 

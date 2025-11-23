@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Query
 from src.core.utils.file_discovery import discover_files
-from src.config.constants import UPLOAD_DIR
+from src.config.constants import QUIZ_QUESTIONS_NUMBER, UPLOAD_DIR
 from .dependency import get_processor, get_quiz_generator, get_quiz_engine
 
 
@@ -14,7 +14,7 @@ class QuizCreateRequest(BaseModel):
 
 class QuizCreateResponse(BaseModel):
     quiz_id: str
-    total_questions: int
+    total_questions: int = QUIZ_QUESTIONS_NUMBER
 
 
 class QuizQuestionResponse(BaseModel):
@@ -51,14 +51,13 @@ async def create_quiz(req: QuizCreateRequest):
 
     await get_processor().process_files(files)
 
-    quiz_id, total = await get_quiz_generator().generate_general(
+    quiz_id = await get_quiz_generator().generate_general(
         num_questions=req.num_questions,
         response_language=req.language,
     )
 
     return QuizCreateResponse(
         quiz_id=quiz_id,
-        total_questions=total
     )
 
 
@@ -77,12 +76,12 @@ def start_quiz(quiz_id: str, user_id: str = Query(...)):
 
     return QuizQuestionResponse(**q)
 
+
 @router.post("/answer", response_model=QuizAnswerResponse)
 def answer_quiz(req: QuizAnswerRequest):
     result = get_quiz_engine().answer(
         req.question_id,
         req.user_answer,
-        req.user_id
     )
 
     next_q = result.get("next")

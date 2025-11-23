@@ -36,9 +36,6 @@ class UserManager:
             conn.commit()
 
     def get_or_create_user(self, name: str) -> str:
-        
-        self._init_db()
-
         with self._connect() as conn:
             cur = conn.cursor()
             cur.execute("SELECT user_id FROM users WHERE name=?", (name,))
@@ -54,9 +51,6 @@ class UserManager:
             return user_id
 
     def update_topic_performance(self, user_id: str, topic: str, correct: bool):
-        
-        self._init_db()
-
         with self._connect() as conn:
             cur = conn.cursor()
             cur.execute(
@@ -86,8 +80,6 @@ class UserManager:
             conn.commit()
 
     def get_user_profile(self, user_id: str) -> Dict:
-        self._init_db()
-
         with self._connect() as conn:
             cur = conn.cursor()
             cur.execute(
@@ -119,14 +111,12 @@ class UserManager:
             }
 
     def get_weak_topics(self, user_id: str, threshold: float = 70.0) -> List[str]:
-        self._init_db()
-
         with self._connect() as conn:
             cur = conn.cursor()
             cur.execute(
                 """
-                SELECT topic, attempts, correct FROM user_topic_stats WHERE user_id=?
-                """,
+            SELECT topic, attempts, correct FROM user_topic_stats WHERE user_id=?
+            """,
                 (user_id,),
             )
             rows = cur.fetchall()
@@ -134,58 +124,22 @@ class UserManager:
             return [r[0] for r in rows if r[1] >= 1 and (r[2] / r[1] * 100) < threshold]
 
     def get_user_summary(self, user_id: str) -> Dict:
-        self._init_db()
-
         with self._connect() as conn:
             cur = conn.cursor()
             cur.execute(
                 """
-                SELECT SUM(attempts), SUM(correct)
-                FROM user_topic_stats
-                WHERE user_id=?
-                """,
+            SELECT SUM(attempts), SUM(correct)
+            FROM user_topic_stats
+            WHERE user_id=?
+            """,
                 (user_id,),
             )
-            total_attempts, total_correct = cur.fetchone() or (0, 0)
-
+        total_attempts, total_correct = cur.fetchone()
         if not total_attempts:
             return {"attempts": 0, "correct": 0, "accuracy": 0}
-
         return {
             "attempts": total_attempts,
             "correct": total_correct,
             "accuracy": round(total_correct / total_attempts * 100, 2),
         }
-    def get_topic_difficulty(self, user_id: str):
-        with self._connect() as conn:
-            cur = conn.cursor()
-            cur.execute(
-            """
-            SELECT topic, attempts, correct
-            FROM user_topic_stats
-            WHERE user_id=?
-            """,
-            (user_id,)
-        )
-        rows = cur.fetchall()
 
-        difficulty = []
-        for topic, attempts, correct in rows:
-            if attempts == 0:
-                continue
-            accuracy = correct / attempts * 100
-            difficulty.append((topic, accuracy))
-        difficulty.sort(key=lambda x: x[1]) 
-        return difficulty
-    def get_recommendations(self, user_id: str):
-        difficulties = self.get_topic_difficulty(user_id)
-
-        if not difficulties:
-            return "No data yet ❗"
-
-        weak = [t for t, acc in difficulties if acc < 70] 
-
-        if not weak:
-            return "No weak topics 🎉 You're doing great!"
-
-        return "You should repeat: " + ", ".join(weak)
