@@ -17,6 +17,8 @@ class QuizGenerator:
     ):
         chunks = self.retriever.retrieve(query="", top_k=NUMBER_OF_QUIZ_CHUNKS)
 
+        print(f"generating {num_questions} quiz questions, let's wait some time...")
+
         llm_response = generate_quiz_questions(
             chunks, num_questions=num_questions, response_language=response_language
         )

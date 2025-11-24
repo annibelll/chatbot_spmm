@@ -40,6 +40,7 @@ async def chat(req: ChatRequest):
         return ChatResponse(answer=answer)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat error: {e}")
+
 @router.delete("/clear_embeddings")
 def clear_embeddings():
     try:
@@ -126,6 +127,4 @@ def clear_all_files():
         return {"status": "ok", "message": "All files and embeddings deleted."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error clearing files: {e}")
-
-
 

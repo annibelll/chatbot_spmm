@@ -28,6 +28,7 @@ def get_user_profile(user_id: str):
         raise HTTPException(status_code=404, detail="User not found.")
     return profile
 
+
 @router.get("/weak_topics/{user_id}")
 def get_weak_topics(user_id: str):
     manager = get_user_manager()
@@ -39,8 +40,4 @@ def get_weak_topics(user_id: str):
     weak_topics = manager.get_weak_topics(user_id)
     summary = manager.get_user_summary(user_id)
 
-    return {
-        "user": user,
-        "weak_topics": weak_topics,
-        "summary": summary
-    }
+    return {"user": user, "weak_topics": weak_topics, "summary": summary}

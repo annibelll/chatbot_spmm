@@ -12,6 +12,7 @@ class QuizEngine:
         self.user_manager = user_manager
 
     def start(self, user_id, quiz_id):
+        print(f"starting a quiz for user with id: {user_id}")
         self.offset = 0
         self.user_id = user_id
         self.quiz_id = quiz_id
@@ -40,13 +41,13 @@ class QuizEngine:
 
         self.user_manager.update_topic_performance(self.user_id, topic, correct)
 
-        self.summary["score"] += score
+        self.summary["score"] = int(self.summary.get("score", 0)) + int(score)
         self.offset += 1
         next_q = self.store.get_question(self.quiz_id, self.offset)
 
         if not next_q:
             summary = self.store.get_summary(self.quiz_id)
-            summary["score"] = self.summary["score"]
+            summary["score"] = str(self.summary["score"])
             return {"feedback": feedback, "next": None, "summary": summary}
 
         return {"feedback": feedback, "next": next_q}

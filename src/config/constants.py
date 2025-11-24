@@ -8,7 +8,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 SQL3_PATH = "./src/data/registry.db"
-DEFAULT_RESPONSE_LANGUAGE = "Slovak"
+DEFAULT_RESPONSE_LANGUAGE = "English"
 
 OLLAMA_API_URL = "http://localhost:11434/api"
 LLM_MODEL = "mistral:latest"

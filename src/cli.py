@@ -84,6 +84,7 @@ async def demo_quiz(
     )
 
     q = engine.start(user_id, quiz_id)
+    print(f"returned from QuizEngine.start(): {q}")
     while q:
         print(f"\nQ: {q['question']}")
         if q["options"]:

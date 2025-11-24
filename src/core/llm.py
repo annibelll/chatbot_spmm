@@ -131,39 +131,48 @@ def generate_quiz_questions(
     context_text = "\n\n".join(extract_text(chunk) for chunk in context_chunks)
 
     prompt = f"""
-You are a teacher.
+You are an expert teacher creating a quiz STRICTLY and EXCLUSIVELY from the provided CONTEXT below.
 
-Using ONLY the context below, generate EXACTLY {num_questions} quiz questions.
+DO NOT use any outside information—ONLY the context!
 
-REQUIREMENTS:
-- Output ONLY a JSON array.
-- JSON must be valid.
-- Every item MUST have:
-    "type": "multiple_choice" or "open_ended"
-    "question": string
-    "topic": string
-    "options": array of 4 strings OR null
-    "answer": string
-- All values must be written in {response_language}.
-- JSON keys must stay in English.
-All technical terms must be spelled correctly.
-Do not invent new terms. Use only real terminology.
-If unsure, choose the closest valid term.
-If you cannot generate valid JSON → return [].
-Each quiz item MUST include:
-- question
-- answer
-- topic (LLM must classify the question into ONE short topic based ONLY on the context. 
-  Topic must be 1–3 words. If unsure, choose the closest valid topic found in context.)
+YOUR TASK:
+1. Generate EXACTLY {num_questions} quiz questions (mix multiple-choice and open-ended).
+2. ALL questions and answers MUST be based SOLELY on the context provided—NO exceptions.
+3. Each question must be factual, concise, and answerable from the context only.
+4. Each question must have a short topic string.
 
-CONTEXT:
-{context_text}
+LANGUAGE IMPORTANT:
+- Write ALL values in {response_language}: "question", "topic", "options", "answer".
+- JSON field names ("type", "question", "topic", "options", "answer") must stay ENGLISH.
+- For multiple-choice, do NOT translate "multiple_choice", for open-ended do NOT translate "open_ended".
+- If you cannot follow these language rules, return ONLY '[]'.
+
+FORMAT IMPORTANT:
+- Output ONLY a JSON array, nothing else.
+- Each item must match this EXACT structure.
+
+EXAMPLE OUTPUT:
+[
+  {{
+    "type": "multiple_choice",
+    "question": "Quelle est la couleur principale de l'objet X?",
+    "topic": "Couleur",
+    "options": ["rouge", "vert", "bleu", "jaune"],
+    "answer": "bleu"
+  }},
+  {{
+    "type": "open_ended",
+    "question": "Décrivez les deux étapes du processus Y.",
+    "topic": "Étapes",
+    "options": null,
+    "answer": "Ajouter les ingrédients et cuire pendant 10 minutes."
+  }}
+]
 
 CONTEXT START
 {context_text}
 CONTEXT END
-
-Respond only in {response_language}. Output only the JSON array. Do NOT translate JSON field names.
+REMEMBER: Respond only in {response_language}. Output only the JSON array. Do NOT translate JSON field names.
 """
 
     try:

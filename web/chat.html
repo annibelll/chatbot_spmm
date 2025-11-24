@@ -10,18 +10,14 @@
   <canvas id="network"></canvas>
 
   <header class="top-bar">
-  <button id="home-btn" class="neon-btn">Back</button>
+    <button id="home-btn" class="neon-btn">Back</button>
 
-  <div class="mode-switch">
-    <button id="study-mode" class="mode active">Study</button>
-    <button id="quiz-mode" class="mode">Quiz</button>
-  </div>
-
-  <button id="profile-btn" class="neon-btn">👤 Profile</button>
-</header>
-
-
+    <div class="mode-switch">
+      <button id="study-mode" class="mode active">Study</button>
+      <button id="quiz-mode" class="mode">Quiz</button>
     </div>
+
+    <button id="profile-btn" class="neon-btn">👤 Profile</button>
   </header>
 
   <main class="main-area">
@@ -33,15 +29,15 @@
           ➕ Add files
           <input type="file" id="file-upload" multiple />
         </label>
-
-        
         <button id="delete-all" class="delete-all-btn">🗑️ Delete all</button>
       </div>
     </aside>
 
     <section class="chat-container">
       <div class="chat-box" id="chat-box">
-        <div class="message ai">Hello 👋 I'm your AI Tutor. Upload materials to start learning.</div>
+        <div class="message ai">
+          Hello 👋 I'm your AI Tutor. Upload materials to start learning.
+        </div>
       </div>
 
       <div class="chat-input">
@@ -50,6 +46,8 @@
       </div>
     </section>
   </main>
+
+  <div id="quiz-options-container" style="display:none;"></div>
 
   <script src="chat.js"></script>
 </body>

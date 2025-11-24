@@ -1,7 +1,9 @@
 const canvas = document.getElementById("network");
 const ctx = canvas.getContext("2d");
 
-let width, height, nodes = [];
+let width,
+  height,
+  nodes = [];
 
 function resize() {
   width = canvas.width = window.innerWidth;
@@ -18,7 +20,7 @@ function createNodes() {
       y: Math.random() * height,
       vx: (Math.random() - 0.5) * 0.5,
       vy: (Math.random() - 0.5) * 0.5,
-      radius: Math.random() * 2 + 1
+      radius: Math.random() * 2 + 1,
     });
   }
 }
@@ -38,7 +40,7 @@ function draw() {
     ctx.fill();
   }
 
-  for (let i = 0; i < nodes.length; i++) {
+  for (let i = 0; i < nodes.length - 1; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const dx = nodes[i].x - nodes[j].x;
       const dy = nodes[i].y - nodes[j].y;
@@ -53,51 +55,74 @@ function draw() {
       }
     }
   }
-
   requestAnimationFrame(draw);
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("resize", resize);
   resize();
-  requestAnimationFrame(draw);
+  draw();
 
-  const homeBtn = document.getElementById("home-btn");
-  if (homeBtn) homeBtn.onclick = () => window.location.href = "chat.html";
+  const back = document.getElementById("home-btn");
+  if (back) back.onclick = () => (window.location.href = "chat.html");
 
   const params = new URLSearchParams(window.location.search);
   const userId = params.get("user_id") || "guest";
 
   try {
-    const res = await fetch(`http://127.0.0.1:8000/users/weak_topics/${encodeURIComponent(userId)}`);
+    const res = await fetch(
+      `http://127.0.0.1:8000/users/weak_topics/${encodeURIComponent(userId)}`,
+    );
+
+    if (!res.ok) throw new Error("Server error");
+
     const data = await res.json();
 
+    const summary = data.summary || { attempts: 0, correct: 0, accuracy: 0 };
+    const topics = data.user?.topics || [];
     const weakTopics = data.weak_topics || [];
 
-    document.getElementById("avg-score").textContent = "—";
-    document.getElementById("completed").textContent = "—";
+    document.getElementById("avg-score").textContent =
+      summary.accuracy.toFixed(1) + "%";
 
-    document.getElementById("best-topic").textContent =
-      weakTopics.length > 0 ? weakTopics[0] : "—";
+    document.getElementById("completed").textContent = summary.attempts;
 
-    document.getElementById("weak-topic").textContent =
-      weakTopics.length > 0 ? weakTopics[weakTopics.length - 1] : "—";
+    if (topics.length > 0) {
+      const sorted = [...topics].sort((a, b) => b.accuracy - a.accuracy);
+
+      document.getElementById("best-topic").textContent = sorted[0].topic;
+      document.getElementById("weak-topic").textContent =
+        sorted[sorted.length - 1].topic;
+    }
+
+    const recBox = document.createElement("div");
+    recBox.classList.add("profile-card");
+    recBox.innerHTML = `
+      <h3>Recommended Focus</h3>
+      ${
+        weakTopics.length > 0
+          ? `<p>You should spend more time on: <strong>${weakTopics.join(
+              ", ",
+            )}</strong>.</p>`
+          : `<p>You are performing evenly across topics.</p>`
+      }
+    `;
+    document.querySelector(".profile-container").appendChild(recBox);
 
     const tbody = document.getElementById("quiz-history");
     tbody.innerHTML = "";
 
-    weakTopics.forEach(topic => {
+    topics.forEach((t) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>—</td>
-        <td>${topic}</td>
-        <td>—</td>
-        <td>Low accuracy</td>
+        <td>${data.user.joined.split(" ")[0]}</td>
+        <td>${t.topic}</td>
+        <td>${t.correct}/${t.attempts}</td>
+        <td>${t.accuracy.toFixed(1)}%</td>
       `;
       tbody.appendChild(row);
     });
-
   } catch (err) {
-    console.error("Error loading profile data:", err);
+    console.error("Error loading profile:", err);
   }
 });

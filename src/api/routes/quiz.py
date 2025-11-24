@@ -1,3 +1,4 @@
+import uuid
 from pathlib import Path
 from pydantic import BaseModel
 from typing import Optional, List
@@ -71,7 +72,7 @@ def start_quiz(quiz_id: str, user_id: str = Query(...)):
     if "question" not in q:
         q["question"] = q.get("term") or "Unknown question"
 
-    if "id" not in q or not q["id"]:
+    if not q.get("id"):
         q["id"] = str(uuid.uuid4())
 
     return QuizQuestionResponse(**q)
@@ -79,17 +80,21 @@ def start_quiz(quiz_id: str, user_id: str = Query(...)):
 
 @router.post("/answer", response_model=QuizAnswerResponse)
 def answer_quiz(req: QuizAnswerRequest):
-    result = get_quiz_engine().answer(
+    engine = get_quiz_engine()
+
+    result = engine.answer(
         req.question_id,
         req.user_answer,
     )
 
     next_q = result.get("next")
 
+    print(f"users score is: {result.get("score", 0)}")
+
     return QuizAnswerResponse(
         correct=result.get("correct", False),
         feedback=result.get("feedback", ""),
         score=result.get("score", 0),
-        next_question=next_q,
+        next_question=QuizQuestionResponse(**next_q) if next_q else None,
         summary=result.get("summary"),
     )

@@ -32,6 +32,7 @@ class Evaluator:
             return is_correct, feedback, score
 
         # Open-ended → LLM is used for semantic comparison
+        print("evaluating open-ended question...")
         eval_result = evaluate_open_answer(
             q[0], correct_answer, user_answer, DEFAULT_RESPONSE_LANGUAGE
         )
