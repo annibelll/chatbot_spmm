@@ -65,6 +65,8 @@ resize();
 draw();
 
 window.addEventListener("DOMContentLoaded", async () => {
+  const back = document.getElementById("home-btn");
+  if (back) back.onclick = () => (window.location.href = "index.html");
   const input = document.getElementById("user-input");
   const sendBtn = document.getElementById("send-btn");
   const chatBox = document.getElementById("chat-box");

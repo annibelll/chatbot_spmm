@@ -11,6 +11,7 @@ SQL3_PATH = "./src/data/registry.db"
 DEFAULT_RESPONSE_LANGUAGE = "English"
 
 OLLAMA_API_URL = "http://localhost:11434/api"
+#OLLAMA_API_URL = "https://ollama.kucy.online/api"
 LLM_MODEL = "mistral:latest"
 
 CHROMA_DB_SAVINGS = "./src/data/embeddings"

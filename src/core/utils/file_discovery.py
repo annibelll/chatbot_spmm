@@ -9,7 +9,7 @@ def discover_files(
     Scan a folder and return a list of valid files.
     """
     if allowed_exts is None:
-        allowed_exts = ["pdf", "txt", "jpg", "png", "mp3", "mp4", "docx"]
+        allowed_exts = ["pdf", "txt", "jpg", "png", "mp3", "mp4","m4a", "wav", "docx"]
 
     files = [
         f

@@ -89,7 +89,7 @@ def answer_quiz(req: QuizAnswerRequest):
 
     next_q = result.get("next")
 
-    print(f"users score is: {result.get("score", 0)}")
+    print(f"users score is: {result.get('score', 0)}")
 
     return QuizAnswerResponse(
         correct=result.get("correct", False),

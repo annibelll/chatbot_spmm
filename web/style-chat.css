@@ -325,3 +325,37 @@ canvas {
   box-shadow: 0 0 20px #00bfff;
   font-weight: 600;
 }
+.quiz-option {
+  display: inline-block;
+  background: rgba(0, 191, 255, 0.15);
+  border: 1px solid rgba(0, 191, 255, 0.35);
+  color: #e6f6ff;
+  padding: 8px 14px;
+  margin: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(0, 191, 255, 0.25);
+}
+
+.quiz-option:hover {
+  background: rgba(0, 191, 255, 0.35);
+  color: #000;
+  border-color: #00bfff;
+  box-shadow: 0 0 20px #00bfff;
+  transform: translateY(-2px);
+}
+
+.quiz-option.correct {
+  background: rgba(0, 255, 140, 0.25);
+  border-color: rgba(0, 255, 140, 0.6);
+  box-shadow: 0 0 20px rgba(0, 255, 140, 0.45);
+}
+
+.quiz-option.wrong {
+  background: rgba(255, 80, 80, 0.25);
+  border-color: rgba(255, 80, 80, 0.6);
+  box-shadow: 0 0 20px rgba(255, 80, 80, 0.35);
+}

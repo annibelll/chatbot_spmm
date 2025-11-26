@@ -55,7 +55,7 @@ class EmbeddingManager:
 
     def clear_database(self):
         try:
-            self.collection.delete(where={})
+            self.collection.delete(where={"file_id": {"$ne": None}})
             print("🧹 All embeddings cleared from collection.")
         except Exception as e:
             print(f"❌ Error clearing database: {e}")

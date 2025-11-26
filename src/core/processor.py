@@ -3,7 +3,7 @@ import whisper
 from pathlib import Path
 import pytesseract
 from PIL import Image
-from docx import Document  # ← додано
+from docx import Document 
 
 def extract_text(file_path: Path) -> str:
     suffix = file_path.suffix.lower()
@@ -13,7 +13,7 @@ def extract_text(file_path: Path) -> str:
         return _extract_image(file_path)
     elif suffix in [".txt", ".md"]:
         return file_path.read_text(encoding="utf-8")
-    elif suffix in [".mp3", ".wav", ".mp4"]:
+    elif suffix in [".mp3", ".wav", ".mp4", ".m4a"]:
         return _extract_audio(file_path)
     elif suffix == ".docx":
         return _extract_docx(file_path)
@@ -34,9 +34,29 @@ def _extract_image(file_path: Path) -> str:
     return text.strip()
 
 def _extract_audio(file_path: Path) -> str:
-    model = whisper.load_model("base")  # "tiny", "small", etc.
-    result = model.transcribe(str(file_path))
+    import subprocess
+    import tempfile
+
+    temp_wav = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    temp_wav_path = temp_wav.name
+    temp_wav.close()
+
+    # Конвертуємо через ffmpeg — тепер шлях точно валідний
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", str(file_path),
+        "-ac", "1",
+        "-ar", "16000",
+        temp_wav_path
+    ]
+
+    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    model = whisper.load_model("base")
+    result = model.transcribe(temp_wav_path)
+
     return result.get("text", "").strip()
+
 
 def _extract_docx(file_path: Path) -> str:
     doc = Document(file_path)

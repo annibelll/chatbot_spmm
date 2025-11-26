@@ -7,6 +7,7 @@ body {
   font-family: 'Segoe UI', sans-serif;
   color: #e6f6ff;
   overflow: hidden;
+  overflow: auto;
 }
 
 

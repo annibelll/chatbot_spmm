@@ -61,9 +61,14 @@ draw();
 
 document.addEventListener("DOMContentLoaded", () => {
   const startBtn = document.getElementById("start");
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        startBtn.click();
+    }
+});
   const usernameInput = document.getElementById("username");
-  const clearBtn = document.getElementById("clear-btn"); // кнопка для очищення бази
-  const fileList = document.getElementById("sources-list"); // список файлів (якщо є)
+  const clearBtn = document.getElementById("clear-btn"); 
+  const fileList = document.getElementById("sources-list"); 
 
   if (startBtn) {
     startBtn.addEventListener("click", async () => {

@@ -10,3 +10,4 @@ requests
 python-multipart
 langdetect
 python-docx
+

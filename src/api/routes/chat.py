@@ -60,7 +60,9 @@ def delete_file(filename: str):
         if not file_path.exists():
             raise HTTPException(status_code=404, detail="File not found")
 
-        file_path.unlink()  
+        file_path.unlink() 
+        embedder = EmbeddingManager()
+        embedder.delete_by_filename(filename)
         return {"status": "ok", "message": f"File '{filename}' deleted successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting file: {e}")
@@ -87,6 +89,14 @@ async def upload_file(file: UploadFile = File(...)):
             with fitz.open(file_path) as pdf:
                 for page in pdf:
                     text += page.get_text()
+        elif file_path.suffix.lower() in [".mp3", ".wav", ".mp4", ".m4a"]:
+            from src.core.utils.file_extractor import _extract_audio
+            text = _extract_audio(file_path)
+        elif ext in [".jpg", ".jpeg", ".png"]:
+            import pytesseract
+            from PIL import Image
+            img = Image.open(file_path)
+            text = pytesseract.image_to_string(img, lang="eng")
 
         if text.strip():
             chunks = [{"file_id": file_path.stem, "file_ext": file_path.suffix.lstrip('.'), "text": text}]

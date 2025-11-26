@@ -1,3 +1,4 @@
+from requests.auth import HTTPBasicAuth
 import json
 import requests
 from typing import List, Dict, Any
@@ -47,6 +48,7 @@ Answer:
         response = requests.post(
             OLLAMA_API_URL + "/generate",
             json={"model": LLM_MODEL, "prompt": prompt, "stream": False},
+            #auth=HTTPBasicAuth("anna", "!LmPF&$4")
         )
         response.raise_for_status()
         data = response.json()
@@ -98,6 +100,7 @@ RETURN ONLY THE JSON. DO NOT ANSWER THE QUESTION UNDER ANY CIRCUMSTANCES.
         response = requests.post(
             OLLAMA_API_URL + "/generate",
             json={"model": LLM_MODEL, "prompt": prompt, "stream": False},
+            #auth=HTTPBasicAuth("anna", "!LmPF&$4")
         )
         response.raise_for_status()
 
@@ -179,6 +182,7 @@ REMEMBER: Respond only in {response_language}. Output only the JSON array. Do NO
         response = requests.post(
             OLLAMA_API_URL + "/generate",
             json={"model": LLM_MODEL, "prompt": prompt, "stream": False},
+            #auth=HTTPBasicAuth("anna", "!LmPF&$4")
         )
         response.raise_for_status()
         raw = response.json().get("response", "").strip()
